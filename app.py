@@ -90,7 +90,7 @@ if not st.session_state.accepted_terms:
     agree = st.checkbox("I have read and agree to the above warnings and guidelines")
     if st.button("Continue to QuizGenius", disabled=not agree):
         st.session_state.accepted_terms = True
-        st.experimental_rerun()
+        st.rerun()
     
     st.stop()
 
