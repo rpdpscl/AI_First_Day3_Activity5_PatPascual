@@ -143,6 +143,8 @@ if 'quiz_generated' not in st.session_state:
     st.session_state.quiz_generated = False
 if 'quiz_text' not in st.session_state:
     st.session_state.quiz_text = None
+if 'pdf_data' not in st.session_state:
+    st.session_state.pdf_data = None
 
 # Configure Streamlit page settings
 st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
@@ -529,16 +531,20 @@ elif options == "Quiz Generator":
                         line_ascii = line.encode('ascii', 'replace').decode()
                         pdf.multi_cell(0, 10, txt=line_ascii)
                     
-                    # Download button for quiz
-                    st.download_button(
-                        label="Download Quiz (PDF)",
-                        data=pdf.output(dest='S').encode('latin-1'),
-                        file_name="quiz.pdf",
-                        mime="application/pdf"
-                    )
+                    # Store PDF data in session state
+                    st.session_state.pdf_data = pdf.output(dest='S').encode('latin-1')
 
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")
+
+        # Show download button if quiz is generated and PDF data exists
+        if st.session_state.quiz_generated and st.session_state.pdf_data is not None:
+            st.download_button(
+                label="Download Quiz (PDF)",
+                data=st.session_state.pdf_data,
+                file_name="quiz.pdf",
+                mime="application/pdf"
+            )
 
         # Add Generate New Quiz button that resets the state
         if st.session_state.quiz_generated:
@@ -547,4 +553,5 @@ elif options == "Quiz Generator":
                 st.session_state.quiz_generated = False
                 st.session_state.website_content = None
                 st.session_state.quiz_text = None
+                st.session_state.pdf_data = None
                 st.rerun()
