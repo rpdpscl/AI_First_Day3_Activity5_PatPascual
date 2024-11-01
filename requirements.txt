@@ -1,0 +1,42 @@
+# Core AI and Language Models
+openai==0.28.1
+tiktoken==0.6.0
+langchain==0.1.20
+langchain_core
+langchain_community
+
+# Web Framework
+streamlit
+streamlit_option_menu
+streamlit_extras
+
+# File Processing
+PyPDF2
+python-docx
+pandas
+openpyxl
+
+# Web Scraping and Requests
+beautifulsoup4
+requests
+
+# Media Processing
+moviepy
+SpeechRecognition
+yt-dlp
+openai-whisper
+Pillow
+pytesseract
+
+# Document Generation
+fpdf
+
+# Data Science and ML
+numpy
+scipy
+scikit-learn
+faiss-cpu
+plotly
+
+# Math Processing
+sympy
