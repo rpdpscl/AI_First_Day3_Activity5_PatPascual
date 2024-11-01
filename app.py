@@ -580,8 +580,7 @@ elif options == "Quiz Generator":
                         # Create PDF file for quiz with math support
                         pdf = FPDF()
                         pdf.add_page()
-                        pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)  # Add Unicode font support
-                        pdf.set_font("DejaVu", size=12)
+                        pdf.set_font("Arial", size=12)
                         pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
                         
                         # Split quiz text into lines and add to PDF
