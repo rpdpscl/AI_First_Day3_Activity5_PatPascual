@@ -434,117 +434,54 @@ Example:
 def convert_math_to_unicode(text):
     messages = [
         {"role": "system", "content": """
-Role: You are LaTeXPDFGenius, an advanced mathematical notation converter specializing in transforming LaTeX expressions into publication-ready Unicode text for PDF documents.
+You are LaTeXPDFGenius, specializing in converting LaTeX math to Unicode. Focus ONLY on converting mathematical expressions while preserving the surrounding text structure.
 
-Key Requirements:
-1. Convert ALL mathematical expressions to their Unicode equivalents
-2. Preserve equation structure and visual hierarchy
-3. Maintain consistent spacing and formatting
-4. Ensure readability in PDF output
+Key Conversion Rules:
+1. Basic Math:
+   - x^2 → x² (use actual superscript)
+   - x_2 → x₂ (use actual subscript)
+   - \\frac{a}{b} → a⁄b or use standard fractions (½, ⅓, ¼, etc.)
+   - \\sqrt{x} → √x
+   - \\times → ×
+   - \\div → ÷
 
-Mathematical Conversion Guidelines:
-1. Basic Operations:
-   - Addition (+) → +
-   - Subtraction (-) → −
-   - Multiplication (\\times) → ×
-   - Division (\\div) → ÷
-   - Plus-minus (\\pm) → ±
-   - Minus-plus (\\mp) → ∓
-
-2. Numbers and Exponents:
-   - Superscripts (x^n) → xⁿ (⁰¹²³⁴⁵⁶⁷⁸⁹)
-   - Subscripts (x_n) → xₙ (₀₁₂₃₄₅₆₇₈₉)
-   - Fractions (\\frac{a}{b}) → Unicode fractions where possible (½, ⅓, ¼, etc.)
+2. Superscripts/Subscripts:
+   Superscripts: ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ
+   Subscripts: ₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ
 
 3. Greek Letters:
-   - \\alpha → α
-   - \\beta → β
-   - \\gamma → γ
-   - \\theta → θ
-   - \\pi → π
-   [Continue for all Greek letters]
+   \\alpha → α, \\beta → β, \\gamma → γ, \\delta → δ, \\epsilon → ε, \\theta → θ, \\pi → π
 
-4. Calculus and Series:
-   - Integral (\\int) → ∫
-   - Double Integral (\\iint) → ∬
-   - Triple Integral (\\iiint) → ∭
-   - Contour Integral (\\oint) → ∮
-   - Sum (\\sum) → ∑
-   - Product (\\prod) → ∏
-   - Partial (\\partial) → ∂
+4. Operators:
+   \\sum → ∑, \\prod → ∏, \\int → ∫, \\partial → ∂
 
-5. Relations and Logic:
-   - Less than or equal (\\leq) → ≤
-   - Greater than or equal (\\geq) → ≥
-   - Not equal (\\neq) → ≠
-   - Approximately (\\approx) → ≈
-   - Proportional to (\\propto) → ∝
-   - Similar to (\\sim) → ∼
-   - Identical to (\\equiv) → ≡
+5. Relations:
+   \\le → ≤, \\ge → ≥, \\ne → ≠, \\approx → ≈
 
-6. Set Theory:
-   - Element of (\\in) → ∈
-   - Not element of (\\notin) → ∉
-   - Subset (\\subset) → ⊂
-   - Superset (\\supset) → ⊃
-   - Union (\\cup) → ∪
-   - Intersection (\\cap) → ∩
+6. Special Cases:
+   - Chemical formulas: H₂O, CO₂
+   - Scientific notation: 6.022×10²³
+   - Units: 20°C, 9.81m/s²
 
-7. Arrows and Vectors:
-   - Right arrow (\\rightarrow) → →
-   - Left arrow (\\leftarrow) → ←
-   - Double arrow (\\leftrightarrow) → ↔
-   - Implies (\\Rightarrow) → ⇒
-   - If and only if (\\Leftrightarrow) → ⇔
-   - Vector notation (\\vec{v}) → v⃗
+Examples:
+Input: x^2 + y^2 = z^2
+Output: x² + y² = z²
 
-8. Special Symbols:
-   - Infinity (\\infty) → ∞
-   - Square root (\\sqrt{x}) → √x
-   - Cube root (\\sqrt[3]{x}) → ∛x
-   - Fourth root (\\sqrt[4]{x}) → ∜x
-   - Degree (\\degree) → °
-   - Prime (') → ′
-   - Double prime ('') → ″
+Input: \\frac{1}{2}\\alpha\\beta = \\sqrt{y}
+Output: ½αβ = √y
 
-Format Requirements:
-1. Text Structure:
-   - Remove LaTeX delimiters ($, $$, \\[, \\])
-   - Preserve line breaks and paragraph structure
-   - Maintain question numbering and formatting
-   - Keep option labels (A), B), C), D)) intact
+Input: \\int_{0}^{\\infty} e^{-x^2} dx
+Output: ∫₀^∞ e⁻ˣ² dx
 
-2. Spacing Guidelines:
-   - Add appropriate spacing around operators
-   - Maintain alignment in equations
-   - Preserve indentation in multi-line expressions
-   - Keep consistent spacing between elements
+Rules:
+1. Convert ALL mathematical expressions
+2. Preserve surrounding text exactly
+3. Maintain spacing and line breaks
+4. Keep question numbers and formatting intact
+5. Preserve multiple choice options (A), B), C), D))
 
-3. Special Handling:
-   - Complex fractions: Use horizontal division when Unicode fractions unavailable
-   - Matrices: Convert to readable format with proper alignment
-   - Multi-line equations: Preserve structure and alignment
-   - Nested expressions: Maintain proper hierarchy
-
-Example Conversions:
-Input: $x^2 + \\frac{1}{2}\\alpha\\beta = \\sqrt{y}$
-Output: x² + ½αβ = √y
-
-Input: $$\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$
-Output: ∫₀^∞ e⁻ˣ² dx = √π/2
-
-Remember:
-- Convert ALL mathematical notation
-- Maintain readability and clarity
-- Preserve structural hierarchy
-- Ensure consistent formatting
-- Handle complex expressions appropriately
-
-Output Format:
-Return ONLY the converted text without explanations or comments.
-Preserve all original line breaks and spacing.
-Maintain the exact structure of the input text."""},
-        {"role": "user", "content": f"Convert this LaTeX math to Unicode symbols: {text}"}
+Return ONLY the converted text without explanations."""},
+        {"role": "user", "content": f"Convert all LaTeX math expressions to Unicode, preserving all other text structure: {text}"}
     ]
     
     try:
@@ -554,7 +491,7 @@ Maintain the exact structure of the input text."""},
         )
         return response.choices[0].message.content
     except Exception as e:
-        return text  # Return original text if conversion fails
+        return text
 
 # Add custom CSS styling for the app
 st.markdown("""
@@ -716,46 +653,45 @@ elif options == "Quiz Generator":
                 pdf.set_font('Arial', size=12)
                 pdf.set_auto_page_break(auto=True, margin=15)
                 
-                # Convert all mathematical notation to Unicode before processing
+                # First convert all LaTeX to Unicode
                 unicode_text = convert_math_to_unicode(quiz_text)
                 
                 # Process text for PDF
                 lines = unicode_text.split('\n')
                 for line in lines:
                     try:
-                        # Clean the line of problematic characters
-                        cleaned_line = ''.join(char if ord(char) < 128 else ' ' for char in line)
-                        
                         # Format the line based on content type
                         if line.startswith('Question'):
                             pdf.set_font('Arial', 'B', 12)
-                            pdf.multi_cell(0, 10, cleaned_line)
+                            pdf.multi_cell(0, 10, line)
                             pdf.set_font('Arial', '', 12)
                         elif line.startswith(('A)', 'B)', 'C)', 'D)')):
-                            pdf.cell(10)
-                            pdf.multi_cell(0, 10, cleaned_line)
+                            pdf.cell(10)  # Indent options
+                            pdf.multi_cell(0, 10, line)
                         else:
-                            pdf.multi_cell(0, 10, cleaned_line)
+                            pdf.multi_cell(0, 10, line)
                         
                         # Add spacing between questions
-                        if not cleaned_line.strip():
+                        if not line.strip():
                             pdf.ln(5)
                     except Exception as e:
                         print(f"Error processing line: {e}")
-                        continue
+                        # Try to clean problematic characters while preserving math symbols
+                        cleaned_line = ''.join(char if ord(char) < 128 or char in '²³⁰¹⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉×÷±∑∫∂≤≥≠≈√αβγθπ' else ' ' for char in line)
+                        pdf.multi_cell(0, 10, cleaned_line)
                 
                 try:
                     return pdf.output(dest='S').encode('latin-1')
                 except Exception as e:
                     print(f"PDF generation error: {str(e)}")
-                    # Create a simplified version if encoding fails
+                    # Create simplified version if encoding fails
                     pdf = PDF()
                     pdf.add_page()
                     pdf.set_font("Arial", size=12)
-                    pdf.multi_cell(0, 10, "Quiz Content (Special characters removed for compatibility):")
+                    pdf.multi_cell(0, 10, "Quiz Content (Some special characters removed for compatibility)")
                     pdf.ln(10)
                     
-                    # Add content with special characters removed
+                    # Add content with minimal character cleaning
                     for line in lines:
                         cleaned_line = ''.join(char if ord(char) < 128 else ' ' for char in line)
                         pdf.multi_cell(0, 10, cleaned_line)
