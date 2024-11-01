@@ -232,11 +232,19 @@ with st.sidebar:
     st.image('images/White_AI Republic.png')
     
     # API key input with Enter button - Fixed column layout
-    api_col1, api_col2 = st.columns([4,1])  # Adjusted ratio for better alignment
+    api_col1, api_col2 = st.columns([5,1])  # Adjusted ratio for better alignment
     with api_col1:
         openai.api_key = st.text_input('Enter OpenAI API token:', type='password', label_visibility="visible")
     with api_col2:
-        check_api = st.button('Enter', use_container_width=True)  # Added container width
+        check_api = st.button('Enter', use_container_width=True, key='api_button')
+        # Add custom CSS to reduce button font size
+        st.markdown("""
+            <style>
+            [data-testid="stButton"][aria-label="api_button"] {
+                font-size: 12px !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
     
     if check_api:
         if not openai.api_key:
