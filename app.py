@@ -170,8 +170,8 @@ Content:
 # Initialize session state variables for app functionality
 if 'accepted_terms' not in st.session_state:
     st.session_state.accepted_terms = False
-if 'website_content' not in st.session_state:
-    st.session_state.website_content = None
+if 'website_contents' not in st.session_state:
+    st.session_state.website_contents = []
 if 'show_config' not in st.session_state:
     st.session_state.show_config = False
 if 'quiz_generated' not in st.session_state:
@@ -587,7 +587,7 @@ if options == "Home":
         <li style='margin-bottom: 8px;'> Multiple question formats and difficulty levels</li>
         <li style='margin-bottom: 8px;'>• Comprehensive answer explanations</li>
         <li style='margin-bottom: 8px;'>• Math-friendly with LaTeX support</li>
-        <li style='margin-bottom: 8px;'>• Head to Quiz Generator to start creating your quiz!</li>
+        <li style='margin-bottom: 8px;'>�� Head to Quiz Generator to start creating your quiz!</li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -611,30 +611,51 @@ elif options == "Quiz Generator":
     st.title("Quiz Generator")
     
     if not st.session_state.url_processed:
-        # Step 1: Get URL
-        col1, col2 = st.columns([5,1], gap="small")
-        with col1:
-            website_url = st.text_input("Enter website URL:")
-        with col2:
-            check_url = st.button('▶', key='url_button')
+        # Step 1: Get URLs
+        st.subheader("Enter up to 5 URLs for content")
+        
+        # Create input fields for up to 5 URLs
+        urls = []
+        for i in range(5):
+            col1, col2 = st.columns([5,1], gap="small")
+            with col1:
+                url = st.text_input(f"URL {i+1}:", key=f"url_{i}")
+                if url:
+                    urls.append(url)
+            
+        process_urls = st.button('Process URLs', key='process_urls')
 
-        if check_url and website_url:
+        if process_urls and urls:
             try:
                 with st.spinner('Processing URL content...'):
-                    # Process URL
-                    response = requests.get(website_url)
-                    soup = BeautifulSoup(response.text, 'html.parser')
-                    st.session_state.website_content = " ".join([p.get_text() for p in soup.find_all('p')])
+                    # Clear previous contents
+                    st.session_state.website_contents = []
                     
-                    # Steps 2 & 3: Detect subject and suggest format
-                    st.session_state.detected_subject = detect_subject_area(st.session_state.website_content)
-                    st.session_state.format_suggestion = suggest_quiz_format(st.session_state.website_content)
+                    # Process each URL
+                    for url in urls:
+                        try:
+                            response = requests.get(url)
+                            soup = BeautifulSoup(response.text, 'html.parser')
+                            content = " ".join([p.get_text() for p in soup.find_all('p')])
+                            st.session_state.website_contents.append(content)
+                        except Exception as e:
+                            st.error(f"Error processing URL {url}: {str(e)}")
                     
-                    st.session_state.url_processed = True
-                    st.rerun()
+                    if st.session_state.website_contents:
+                        # Combine all contents for subject detection and format suggestion
+                        combined_content = " ".join(st.session_state.website_contents)
+                        
+                        # Steps 2 & 3: Detect subject and suggest format
+                        st.session_state.detected_subject = detect_subject_area(combined_content)
+                        st.session_state.format_suggestion = suggest_quiz_format(combined_content)
+                        
+                        st.session_state.url_processed = True
+                        st.rerun()
+                    else:
+                        st.error("No content could be extracted from the provided URLs.")
             except Exception as e:
-                st.error(f"Error extracting website content: {str(e)}")
-    
+                st.error(f"Error processing URLs: {str(e)}")
+
     else:
         if st.session_state.quiz_text:
             # Display generated quiz and buttons
@@ -705,7 +726,7 @@ elif options == "Quiz Generator":
                     st.stop()
 
                 with st.spinner('Generating your quiz...'):
-                    user_message = f"""Based on the following content: {st.session_state.website_content[:4000]}... (truncated)
+                    user_message = f"""Based on the following content: {' '.join(st.session_state.website_contents)[:4000]}... (truncated)
                     Please generate {num_questions} {question_type} questions at {difficulty} level.
                     {"Focus on these topics: " + specific_topics if specific_topics else ""}
                     Calculate and include appropriate time limit based on question types and difficulty.
