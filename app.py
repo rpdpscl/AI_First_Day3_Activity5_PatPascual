@@ -467,6 +467,29 @@ elif options == "Quiz Generator":
                 st.error(f"Error extracting website content: {str(e)}")
     
     if st.session_state.show_config:
+        # Show the generated quiz if it exists
+        if st.session_state.quiz_text:
+            st.subheader("Generated Quiz:")
+            st.write(st.session_state.quiz_text)
+            
+            # Show download button if PDF data exists
+            if st.session_state.pdf_data is not None:
+                st.download_button(
+                    label="Download Quiz (PDF)",
+                    data=st.session_state.pdf_data,
+                    file_name="quiz.pdf",
+                    mime="application/pdf"
+                )
+                
+            # Add Generate New Quiz button
+            if st.button("Generate New Quiz"):
+                st.session_state.show_config = False
+                st.session_state.quiz_generated = False
+                st.session_state.website_content = None
+                st.session_state.quiz_text = None
+                st.session_state.pdf_data = None
+                st.rerun()
+
         # Detect subject and suggest format
         detected_subject = detect_subject_area(st.session_state.website_content)
         st.info(f"Detected subject area: {detected_subject}")
@@ -515,9 +538,6 @@ elif options == "Quiz Generator":
                     st.session_state.quiz_text = chat.choices[0].message.content
                     st.session_state.quiz_generated = True
                     
-                    st.subheader("Generated Quiz:")
-                    st.write(st.session_state.quiz_text)
-                    
                     # Create PDF file for quiz
                     pdf = FPDF()
                     pdf.add_page()
@@ -533,25 +553,9 @@ elif options == "Quiz Generator":
                     
                     # Store PDF data in session state
                     st.session_state.pdf_data = pdf.output(dest='S').encode('latin-1')
+                    
+                    # Rerun to show the quiz and download button
+                    st.rerun()
 
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")
-
-        # Show download button if quiz is generated and PDF data exists
-        if st.session_state.quiz_generated and st.session_state.pdf_data is not None:
-            st.download_button(
-                label="Download Quiz (PDF)",
-                data=st.session_state.pdf_data,
-                file_name="quiz.pdf",
-                mime="application/pdf"
-            )
-
-        # Add Generate New Quiz button that resets the state
-        if st.session_state.quiz_generated:
-            if st.button("Generate New Quiz"):
-                st.session_state.show_config = False
-                st.session_state.quiz_generated = False
-                st.session_state.website_content = None
-                st.session_state.quiz_text = None
-                st.session_state.pdf_data = None
-                st.rerun()
