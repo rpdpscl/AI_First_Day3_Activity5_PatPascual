@@ -214,31 +214,30 @@ Grading Rubric:
 # Options : Home
 if options == "Home":
     st.title("Welcome to QuizGenius!")
-    st.write("Your intelligent companion for creating customized practice quizzes.")
-    st.write("Simply provide your content in the 'Quiz Generator' section.")
-    st.write("Our AI-powered system will detect the subject and generate tailored questions to help you prepare!")
     
-    st.markdown("### Key Features:")
-    st.markdown("""
-    - Automatic subject detection
-    - Customizable difficulty levels
-    - Multiple question formats
-    - Detailed explanations for each answer
-    - Curriculum-aligned content
-    - Instant quiz generation
-    - Support for multiple file formats (PDF, Word, Excel, Images)
-    - Mathematical notation support
-    - Equivalent answer recognition
-    """)
+    st.markdown("<div style='text-align: center; padding: 20px;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
     
-    st.markdown("### Benefits:")
-    st.markdown("""
-    - Students reported an average 15% score increase on standardized tests
-    - Personalized learning experience
-    - Efficient exam preparation
-    - Immediate feedback and explanations
-    - Math-friendly interface with LaTeX support
-    """)
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### Key Features:")
+        st.markdown("""
+        - AI-powered subject detection and quiz generation
+        - Multiple question formats and difficulty levels
+        - Comprehensive answer explanations
+        - Math-friendly with LaTeX support
+        - Multi-format file upload capability
+        """)
+    
+    with col2:
+        st.markdown("### Key Benefits:")
+        st.markdown("""
+        - 15% average score improvement
+        - Personalized learning experience
+        - Instant feedback and explanations
+        - Time-efficient exam preparation
+        - Enhanced conceptual understanding
+        """)
    
 # Options : About Us
 elif options == "About Us":
