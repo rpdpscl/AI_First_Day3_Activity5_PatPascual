@@ -35,6 +35,23 @@ def detect_subject_area(text):
     except Exception as e:
         return f"Error detecting subject: {str(e)}"
 
+# Function to suggest quiz format based on content and question types
+def suggest_quiz_format(text, question_types):
+    suggestions = []
+    detected_subject = detect_subject_area(text)
+    
+    # Add format suggestions based on subject and question types
+    if "Multiple Choice" in question_types:
+        suggestions.append("- Multiple choice questions are recommended for testing factual knowledge")
+    
+    if "Problem Solving" in question_types:
+        suggestions.append("- Problem solving questions work well for mathematical or analytical content")
+        
+    if "Essay" in question_types:
+        suggestions.append("- Essay questions are ideal for testing deeper understanding and analysis")
+        
+    return suggestions, detected_subject
+
 # Add session state initialization
 if 'accepted_terms' not in st.session_state:
     st.session_state.accepted_terms = False
@@ -406,8 +423,20 @@ elif options == "Quiz Generator":
             st.stop()
             
         # Show format suggestions if text is available
-        if 'text' in locals() and text and question_type:
-            suggestions, detected_subject = suggest_quiz_format(text, question_type)
+        if 'text' in locals() and text:
+            suggestions = []
+            detected_subject = detect_subject_area(text)
+            
+            # Add format suggestions based on subject and question types
+            if "Multiple Choice" in question_type:
+                suggestions.append("- Multiple choice questions are recommended for testing factual knowledge")
+            
+            if "Problem Solving" in question_type:
+                suggestions.append("- Problem solving questions work well for mathematical or analytical content")
+                
+            if "Essay" in question_type:
+                suggestions.append("- Essay questions are ideal for testing deeper understanding and analysis")
+                
             if suggestions:
                 st.info("Format Suggestions:")
                 for suggestion in suggestions:
