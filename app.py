@@ -694,60 +694,42 @@ elif options == "Quiz Generator":
     
     if st.session_state.show_config:
         if st.session_state.quiz_text:
-            # Only show quiz results and related buttons
+            # Display the generated quiz
             st.subheader("Generated Quiz:")
+            st.markdown(st.session_state.quiz_text)
             
-            # Process mathematical notation for web display
-            def process_math_notation(text):
-                # Replace simple exponents (x^2 -> x²)
-                text = text.replace('x^2', 'x²')
-                text = text.replace('x^3', 'x³')
-                # Wrap LaTeX expressions in proper delimiters
-                text = text.replace('\\(', '$')
-                text = text.replace('\\)', '$')
-                text = text.replace('\\[', '$$')
-                text = text.replace('\\]', '$$')
-                return text
+            # Add a separator
+            st.markdown("---")
             
-            processed_text = process_math_notation(st.session_state.quiz_text)
-            st.markdown(processed_text)
+            # Create two columns for the buttons
+            left_col, right_col = st.columns(2)
             
             # Generate PDF data
             pdf_data = create_formatted_pdf(st.session_state.quiz_text)
             
-            # Create a container for buttons with custom styling
-            st.markdown("""
-                <style>
-                .button-container {
-                    display: flex;
-                    justify-content: center;
-                    gap: 20px;
-                    margin-top: 20px;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-            
-            # Display buttons side by side
-            col1, col2 = st.columns(2)
-            with col1:
+            # Left column: Download PDF button
+            with left_col:
                 if pdf_data is not None:
                     st.download_button(
                         label="📥 Download Quiz (PDF)",
                         data=pdf_data,
                         file_name="quiz.pdf",
                         mime="application/pdf",
-                        key="download_button"
+                        key="download_pdf"
                     )
-            with col2:
-                if st.button("🔄 Generate New Quiz", key="new_quiz_button"):
+            
+            # Right column: Generate New Quiz button
+            with right_col:
+                if st.button("🔄 Generate New Quiz", key="new_quiz"):
+                    # Reset all relevant session state variables
                     st.session_state.show_config = False
                     st.session_state.quiz_generated = False
                     st.session_state.website_content = None
                     st.session_state.quiz_text = None
-                    st.session_state.pdf_data = None
                     st.rerun()
+
         else:
-            # Show configuration options only if quiz hasn't been generated
+            # Show configuration options
             # Detect subject and suggest format
             detected_subject = detect_subject_area(st.session_state.website_content)
             st.info(f"Detected subject area: {detected_subject}")
