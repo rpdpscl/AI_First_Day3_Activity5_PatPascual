@@ -17,6 +17,24 @@ from PIL import Image
 import sympy
 from sympy import simplify, latex
 
+# Function to detect subject area from text
+def detect_subject_area(text):
+    # Create message structure for OpenAI API
+    messages = [
+        {"role": "system", "content": "You are a subject matter expert. Given some text content, identify the primary academic subject area it belongs to."},
+        {"role": "user", "content": f"Please identify the primary academic subject area for this text: {text[:1000]}... (truncated)"}
+    ]
+    
+    try:
+        # Call OpenAI API
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error detecting subject: {str(e)}"
+
 # Add session state initialization
 if 'accepted_terms' not in st.session_state:
     st.session_state.accepted_terms = False
