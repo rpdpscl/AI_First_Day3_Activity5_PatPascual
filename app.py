@@ -430,58 +430,97 @@ Example:
 5 × 2 minutes × 2 = 20 minutes + 5 = 25 minutes total
 """
 
-# Function to convert LaTeX math notation to Unicode for PDF output
-def convert_math_to_unicode(text):
+# Function to format quiz content for PDF using OpenAI API
+def format_quiz_for_pdf(quiz_text):
     messages = [
         {"role": "system", "content": """
-You are LaTeXPDFGenius, specializing in converting LaTeX math to Unicode. Focus ONLY on converting mathematical expressions while preserving the surrounding text structure.
+Role: You are PDFFormatGenius, an advanced document formatting specialist with expertise in converting quiz content into print-ready PDF format.
 
-Key Conversion Rules:
-1. Basic Math:
-   - x^2 → x² (use actual superscript)
-   - x_2 → x₂ (use actual subscript)
-   - \\frac{a}{b} → a⁄b or use standard fractions (½, ⅓, ¼, etc.)
-   - \\sqrt{x} → √x
-   - \\times → ×
-   - \\div → ÷
+Key Requirements:
+1. Convert all mathematical notation to Unicode
+2. Structure content for optimal PDF layout
+3. Ensure consistent formatting
+4. Maintain visual hierarchy
+5. Preserve quiz integrity
 
-2. Superscripts/Subscripts:
-   Superscripts: ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ
-   Subscripts: ₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ
+Format Specifications:
 
-3. Greek Letters:
-   \\alpha → α, \\beta → β, \\gamma → γ, \\delta → δ, \\epsilon → ε, \\theta → θ, \\pi → π
+1. Document Structure:
+   - Title and metadata section
+   - Instructions section
+   - Questions section
+   - Answer space (if needed)
+   - Footer
 
-4. Operators:
-   \\sum → ∑, \\prod → ∏, \\int → ∫, \\partial → ∂
+2. Mathematical Notation:
+   Basic Operations:
+   - Inline math: x², y³, z⁴, xⁿ
+   - Fractions: ½, ⅓, ¼, ⅕, ⅙, ⅛
+   - Greek letters: α, β, γ, δ, ε, θ, λ, μ, π, σ, τ, φ, ω
+   - Operators: ×, ÷, ±, ∑, ∫, ∂, ∇, √
+   - Relations: ≤, ≥, ≠, ≈, ∝, ∞, ∈, ∉, ⊂, ⊃, ∪, ∩
+   
+   Advanced Notation:
+   - Integrals: ∫, ∬, ∭ (single, double, triple)
+   - Chemical subscripts: H₂O, CO₂, NH₃
+   - Superscripts: e⁻, Na⁺, OH⁻
+   - Vector notation: →, ↑, ↓, ⇒, ⇔
+   - Set notation: ∅, ∀, ∃, ∄
+   - Calculus: ∂, ∇, ∆
+   - Matrices: [ ]
 
-5. Relations:
-   \\le → ≤, \\ge → ≥, \\ne → ≠, \\approx → ≈
+   Formatting Rules:
+   1. Convert all LaTeX math to appropriate Unicode symbols
+   2. Maintain proper alignment of subscripts and superscripts
+   3. Preserve equation spacing and layout
+   4. Handle multi-line equations appropriately
+   5. Ensure chemical formulas maintain correct subscript positioning
 
-6. Special Cases:
-   - Chemical formulas: H₂O, CO₂
-   - Scientific notation: 6.022×10²³
-   - Units: 20°C, 9.81m/s²
+3. Typography:
+   - Title: 18pt, bold
+   - Headers: 14pt, bold
+   - Questions: 12pt, regular
+   - Options: 12pt, indented
+   - Spacing: 1.5 line height
 
-Examples:
-Input: x^2 + y^2 = z^2
-Output: x² + y² = z²
+4. Layout Elements:
+   - Page margins: 1 inch
+   - Question spacing: double
+   - Option indentation: 0.5 inch
+   - Work space: as needed
 
-Input: \\frac{1}{2}\\alpha\\beta = \\sqrt{y}
-Output: ½αβ = √y
+Output Format:
 
-Input: \\int_{0}^{\\infty} e^{-x^2} dx
-Output: ∫₀^∞ e⁻ˣ² dx
+===============================
+QUIZ TITLE: {Subject} Assessment
+Level: {Level}
+Time: {Duration} minutes
+Points: {Total}
+===============================
 
-Rules:
-1. Convert ALL mathematical expressions
-2. Preserve surrounding text exactly
-3. Maintain spacing and line breaks
-4. Keep question numbers and formatting intact
-5. Preserve multiple choice options (A), B), C), D))
+Instructions:
+{Formatted instructions with proper spacing}
 
-Return ONLY the converted text without explanations."""},
-        {"role": "user", "content": f"Convert all LaTeX math expressions to Unicode, preserving all other text structure: {text}"}
+[Question Format]
+Question {n}: ({points} points)
+{Formatted question text with Unicode math}
+
+A) {formatted option}
+B) {formatted option}
+C) {formatted option}
+D) {formatted option}
+
+[Work Space]
+{If needed}
+
+===============================
+
+Return the formatted text with:
+1. All LaTeX converted to Unicode
+2. Proper spacing and alignment
+3. Clear section breaks
+4. Print-ready structure"""},
+        {"role": "user", "content": f"Format this quiz content for PDF output: {quiz_text}"}
     ]
     
     try:
@@ -491,7 +530,45 @@ Return ONLY the converted text without explanations."""},
         )
         return response.choices[0].message.content
     except Exception as e:
-        return text
+        return quiz_text
+
+# Update the PDF creation function to use OpenAI formatting
+def create_formatted_pdf(quiz_text):
+    # First, get OpenAI to format the content
+    formatted_content = format_quiz_for_pdf(quiz_text)
+    
+    class PDF(FPDF):
+        def header(self):
+            self.set_font('Arial', 'B', 15)
+            self.cell(0, 10, 'Practice Quiz', 0, 1, 'C')
+            self.ln(10)
+        
+        def footer(self):
+            self.set_y(-15)
+            self.set_font('Arial', 'I', 8)
+            self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+    
+    pdf = PDF()
+    pdf.add_page()
+    pdf.set_font('Arial', size=12)
+    pdf.set_auto_page_break(auto=True, margin=15)
+    
+    # Process the OpenAI-formatted content
+    lines = formatted_content.split('\n')
+    for line in lines:
+        if '=======' in line:
+            pdf.ln(5)
+            continue
+        
+        pdf.multi_cell(0, 10, txt=line)
+        if not line.strip():
+            pdf.ln(5)
+    
+    try:
+        return pdf.output(dest='S').encode('latin-1')
+    except Exception as e:
+        print(f"PDF generation error: {str(e)}")
+        return None
 
 # Add custom CSS styling for the app
 st.markdown("""
@@ -635,69 +712,6 @@ elif options == "Quiz Generator":
             processed_text = process_math_notation(st.session_state.quiz_text)
             st.markdown(processed_text)
             
-            # Create PDF with proper formatting
-            def create_formatted_pdf(quiz_text):
-                class PDF(FPDF):
-                    def header(self):
-                        self.set_font('Arial', 'B', 15)
-                        self.cell(0, 10, 'Practice Quiz', 0, 1, 'C')
-                        self.ln(10)
-                    
-                    def footer(self):
-                        self.set_y(-15)
-                        self.set_font('Arial', 'I', 8)
-                        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
-                
-                pdf = PDF()
-                pdf.add_page()
-                pdf.set_font('Arial', size=12)
-                pdf.set_auto_page_break(auto=True, margin=15)
-                
-                # First convert all LaTeX to Unicode
-                unicode_text = convert_math_to_unicode(quiz_text)
-                
-                # Process text for PDF
-                lines = unicode_text.split('\n')
-                for line in lines:
-                    try:
-                        # Format the line based on content type
-                        if line.startswith('Question'):
-                            pdf.set_font('Arial', 'B', 12)
-                            pdf.multi_cell(0, 10, line)
-                            pdf.set_font('Arial', '', 12)
-                        elif line.startswith(('A)', 'B)', 'C)', 'D)')):
-                            pdf.cell(10)  # Indent options
-                            pdf.multi_cell(0, 10, line)
-                        else:
-                            pdf.multi_cell(0, 10, line)
-                        
-                        # Add spacing between questions
-                        if not line.strip():
-                            pdf.ln(5)
-                    except Exception as e:
-                        print(f"Error processing line: {e}")
-                        # Try to clean problematic characters while preserving math symbols
-                        cleaned_line = ''.join(char if ord(char) < 128 or char in '²³⁰¹⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉×÷±∑∫∂≤≥≠≈√αβγθπ' else ' ' for char in line)
-                        pdf.multi_cell(0, 10, cleaned_line)
-                
-                try:
-                    return pdf.output(dest='S').encode('latin-1')
-                except Exception as e:
-                    print(f"PDF generation error: {str(e)}")
-                    # Create simplified version if encoding fails
-                    pdf = PDF()
-                    pdf.add_page()
-                    pdf.set_font("Arial", size=12)
-                    pdf.multi_cell(0, 10, "Quiz Content (Some special characters removed for compatibility)")
-                    pdf.ln(10)
-                    
-                    # Add content with minimal character cleaning
-                    for line in lines:
-                        cleaned_line = ''.join(char if ord(char) < 128 else ' ' for char in line)
-                        pdf.multi_cell(0, 10, cleaned_line)
-                    
-                    return pdf.output(dest='S').encode('latin-1')
-            
             # Generate and store PDF
             st.session_state.pdf_data = create_formatted_pdf(st.session_state.quiz_text)
             
@@ -789,170 +803,3 @@ elif options == "Quiz Generator":
 
                     except Exception as e:
                         st.error(f"An error occurred: {str(e)}")
-
-# Function to format quiz content for PDF using OpenAI
-def format_quiz_for_pdf(quiz_text):
-    messages = [
-        {"role": "system", "content": """
-Role: You are PDFFormatGenius, an expert in creating print-ready quiz documents. Your task is to format quiz content for professional PDF output, ensuring optimal readability and print quality.
-
-Key Requirements:
-1. Print-Ready Formatting
-2. Professional Layout
-3. Consistent Typography
-4. Clear Visual Hierarchy
-5. Proper Mathematical Notation
-
-Document Structure:
-===============================
-[Institution Name/Logo Space]
-QUIZ TITLE: [Subject] Assessment
-Level: [Difficulty Level]
-Time Allowed: [Duration] minutes
-Total Points: [Points]
-Student Name: _________________
-Date: _________________
-===============================
-
-Format Specifications:
-
-1. Header Section:
-   - Clear title with subject area
-   - Quiz metadata (level, time, points)
-   - Student information fields
-   - Date field
-   - Horizontal rules for separation
-
-2. Instructions Section:
-   - Clear, numbered instructions
-   - Special requirements or rules
-   - Calculator/reference material policies
-   - Scoring information
-
-3. Question Formatting:
-   Question [N]: ([points] points)
-   [Question text with proper line breaks and paragraph spacing]
-   
-   Multiple Choice Format:
-   A) [option text]
-   B) [option text]
-   C) [option text]
-   D) [option text]
-   
-   Problem Solving Format:
-   Given:
-   • [given information]
-   • [additional context]
-   
-   Required:
-   • [solution requirements]
-   • [specific steps needed]
-
-4. Mathematical Notation Standards:
-   - Unicode Mathematical Symbols:
-     • Exponents: x², x³, xⁿ
-     • Fractions: ½, ⅓, ¼, etc.
-     • Greek letters: α, β, γ, θ, π
-     • Operators: ×, ÷, ±, ∑, ∫, ∂
-     • Relations: ≤, ≥, ≠, ≈, ∝, ∼, ≡
-     • Sets: ∈, ∉, ⊂, ⊃, ∪, ∩
-     • Arrows: →, ←, ↔, ⇒, ⇔
-     • Special: ∞, √, ∛, ∜, °, ′, ″
-
-5. Typography Guidelines:
-   - Consistent font size hierarchy:
-     • Title: Large and bold
-     • Section headers: Medium and bold
-     • Questions: Regular with bold numbering
-     • Options: Regular with proper indentation
-   - Line Spacing:
-     • Double space between questions
-     • Single space within questions
-     • 1.5 space for mathematical expressions
-
-6. Page Layout:
-   - Margins: 1 inch (2.54 cm) on all sides
-   - Clear question separation
-   - Proper indentation for options (0.5 inch)
-   - Adequate white space for readability
-   - Room for student work (if needed)
-
-7. Special Elements:
-   - Diagrams/Figures: [Figure N] placeholders
-   - Tables: Properly aligned with headers
-   - Equations: Centered and numbered
-   - Reference Material: Clearly labeled
-
-8. Footer Elements:
-   - Page numbers: [Page X of Y]
-   - End of quiz marker
-   - Any additional instructions
-
-Quality Control Checklist:
-1. Consistent numbering throughout
-2. Proper mathematical notation
-3. Clear visual hierarchy
-4. Adequate spacing
-5. Professional appearance
-6. Print-ready formatting
-7. Logical flow
-8. Proper alignment
-
-Example Question Formats:
-
-1. Multiple Choice:
-Question 1: (5 points)
-What is the value of x in the equation x² + 5x + 6 = 0?
-
-A) x = -2 or x = -3
-B) x = 2 or x = 3
-C) x = -1 or x = -6
-D) x = 1 or x = 6
-
-2. Problem Solving:
-Question 2: (10 points)
-Solve the following integral:
-∫₀π sin(x) dx
-
-Step-by-step solution required:
-• Set up the integral
-• Show integration process
-• Evaluate the bounds
-• Simplify final answer
-
-Answer Format Guidelines:
-1. Multiple Choice:
-   - Clear option labels
-   - Logical order of options
-   - Consistent formatting
-
-2. Short Answer:
-   - Adequate space for response
-   - Clear point allocation
-   - Response length guidance
-
-3. Problem Solving:
-   - Step-by-step solution space
-   - Work area demarcation
-   - Point breakdown per step
-
-Return the formatted text exactly as it should appear in the PDF, with:
-1. All mathematical notation converted to Unicode
-2. Proper spacing and alignment
-3. Clear section breaks
-4. Professional layout structure
-5. Print-ready formatting
-
-Remember: The output should be ready for direct PDF conversion and printing."""},
-        {"role": "user", "content": f"Format this quiz content for a print-ready PDF, converting all LaTeX to Unicode and implementing professional layout standards: {quiz_text}"}
-    ]
-    
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=messages
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        print(f"Error formatting quiz: {str(e)}")
-        return quiz_text
