@@ -20,32 +20,86 @@ from sympy import simplify, latex
 # Configure Streamlit page settings
 st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
 
-# Display important warnings first
-st.warning("""
-⚠️ IMPORTANT - PLEASE READ FIRST:
+# Add CSS for flashing warning button
+st.markdown("""
+<style>
+@keyframes flash {
+    0% { background-color: #ff4b4b; }
+    50% { background-color: #ff7b7b; }
+    100% { background-color: #ff4b4b; }
+}
 
-1. Quiz Generation Disclaimer:
-   - Always review generated quiz content before use
-   - AI may occasionally produce inaccurate or hallucinated content
-   - Verify questions and answers against trusted sources
-   
-2. File Upload Guidelines:
-   - Maximum file size: 10MB per file
-   - Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG
-   - Do not upload sensitive or confidential materials
-   - Ensure you have rights to use uploaded content
-   
-3. Security Warnings:
-   - Do not upload materials containing personal/sensitive information
-   - Avoid uploading proprietary or classified documents
-   - Be cautious with academic materials to prevent data leakage
-   - Website URLs should be from trusted sources only
-   
-4. Usage Guidelines:
-   - Generated content is for practice purposes only
-   - Not recommended for official testing/assessment
-   - Keep API keys secure and do not share them
-""")
+.flash-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #ff4b4b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    animation: flash 2s infinite;
+    z-index: 1000;
+}
+
+.warning-content {
+    display: none;
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    width: 400px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+</style>
+
+<script>
+function toggleWarning() {
+    var content = document.getElementById("warning-content");
+    if (content.style.display === "none") {
+        content.style.display = "block";
+    } else {
+        content.style.display = "none";
+    }
+}
+</script>
+
+<button class="flash-button" onclick="toggleWarning()">⚠️ Important Warnings</button>
+<div id="warning-content" class="warning-content">
+    <h3>⚠️ IMPORTANT - PLEASE READ</h3>
+    <h4>1. Quiz Generation Disclaimer:</h4>
+    <ul>
+        <li>Always review generated quiz content before use</li>
+        <li>AI may occasionally produce inaccurate or hallucinated content</li>
+        <li>Verify questions and answers against trusted sources</li>
+    </ul>
+    <h4>2. File Upload Guidelines:</h4>
+    <ul>
+        <li>Maximum file size: 10MB per file</li>
+        <li>Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG</li>
+        <li>Do not upload sensitive or confidential materials</li>
+        <li>Ensure you have rights to use uploaded content</li>
+    </ul>
+    <h4>3. Security Warnings:</h4>
+    <ul>
+        <li>Do not upload materials containing personal/sensitive information</li>
+        <li>Avoid uploading proprietary or classified documents</li>
+        <li>Be cautious with academic materials to prevent data leakage</li>
+        <li>Website URLs should be from trusted sources only</li>
+    </ul>
+    <h4>4. Usage Guidelines:</h4>
+    <ul>
+        <li>Generated content is for practice purposes only</li>
+        <li>Not recommended for official testing/assessment</li>
+        <li>Keep API keys secure and do not share them</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 # Helper function for extracting text from various file formats
 def extract_text_from_file(uploaded_file):
