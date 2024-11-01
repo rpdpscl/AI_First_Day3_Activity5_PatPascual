@@ -17,6 +17,9 @@ from PIL import Image
 import sympy
 from sympy import simplify, latex
 
+# Configure Streamlit page settings - MUST BE FIRST!
+st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
+
 # Add MathJax support for mathematical notation
 st.markdown("""
     <script type="text/javascript" async
@@ -152,9 +155,6 @@ if 'quiz_text' not in st.session_state:
     st.session_state.quiz_text = None
 if 'pdf_data' not in st.session_state:
     st.session_state.pdf_data = None
-
-# Configure Streamlit page settings
-st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
 
 # Warning page
 if not st.session_state.accepted_terms:
