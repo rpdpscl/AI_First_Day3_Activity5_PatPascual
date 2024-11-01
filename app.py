@@ -716,7 +716,7 @@ elif options == "Quiz Generator":
             st.session_state.pdf_data = create_formatted_pdf(st.session_state.quiz_text)
             
             # Display buttons
-            col1, col2, col3 = st.columns([1.5, 1.5, 3])
+            col1, col2 = st.columns(2)
             with col1:
                 if st.session_state.pdf_data is not None:
                     st.download_button(
