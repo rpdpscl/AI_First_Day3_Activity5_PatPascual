@@ -60,18 +60,7 @@ with st.sidebar:
     }
     </style>
 
-    <script>
-    function toggleWarning() {
-        var content = document.getElementById("warning-content");
-        if (content.style.display === "none") {
-            content.style.display = "block";
-        } else {
-            content.style.display = "none";
-        }
-    }
-    </script>
-
-    <button class="flash-button" onclick="toggleWarning()">⚠️ Important Warnings</button>
+    <button class="flash-button" onclick="document.getElementById('warning-content').style.display = document.getElementById('warning-content').style.display === 'none' ? 'block' : 'none'">⚠️ Important Warnings</button>
     <div id="warning-content" class="warning-content">
         <h3>⚠️ IMPORTANT - PLEASE READ</h3>
         <h4>1. Quiz Generation Disclaimer:</h4>
