@@ -28,7 +28,7 @@ def detect_subject_area(text):
     try:
         # Call OpenAI API
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4.0-mini",
             messages=messages
         )
         return response.choices[0].message.content
@@ -440,7 +440,7 @@ elif options == "Quiz Generator":
             
             try:
                 # Generate quiz using OpenAI
-                chat = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=struct)
+                chat = openai.ChatCompletion.create(model="gpt-4.0-mini", messages=struct)
                 response = chat.choices[0].message.content
                 
                 # Split response into questions and answers
