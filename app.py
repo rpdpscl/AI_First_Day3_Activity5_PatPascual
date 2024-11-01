@@ -444,67 +444,37 @@ IMPORTANT FORMATTING RULES:
 
 # Function to format quiz content for PDF using OpenAI API
 def format_quiz_for_pdf(quiz_text):
-    messages = [
-        {"role": "system", "content": """
-Role:
-QuizGenius PDF Formatter specializing in print-ready quiz formats.
-
-Instructions:
-1. Convert LaTeX math to ASCII/Unicode
-2. Format equations for readability
-3. Ensure consistent spacing
-4. Use supported characters only
-5. Handle multi-line equations
-
-Context:
-Creating PDF-compatible quiz content.
-
-Content Requirements:
-1. Question Formatting
-   - Clear numbering and spacing
-   - ASCII-safe mathematical expressions
-   - Proper alignment and indentation
-
-2. Character Conversion Rules
-   - Use ASCII fractions
-   - Simple operators
-   - Basic notation
-
-Constraints:
-1. ASCII/Unicode characters only
-2. Basic symbol support
-3. Consistent formatting
-4. Print-ready output
-
-Examples:
-[existing conversion examples...]
-
-Output Structure:
-[existing structure format...]
-"""},
-        {"role": "user", "content": f"Format this quiz content for PDF output..."}
-    ]
-    
+    # Return the quiz text directly without sending to OpenAI
+    # Just clean up any problematic characters and formatting
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",  # Use GPT-4o-mini for better handling
-            messages=messages,
-            temperature=0.1  # Lower temperature for more consistent formatting
-        )
-        return response.choices[0].message.content
+        # Remove any HTML tags
+        cleaned_text = quiz_text.replace('<br>', '\n').replace('</br>', '\n')
+        
+        # Convert LaTeX to simpler notation for PDF
+        cleaned_text = cleaned_text.replace('$', '')  # Remove LaTeX delimiters
+        cleaned_text = cleaned_text.replace('\\frac{', '').replace('}{', '/').replace('}', '')
+        cleaned_text = cleaned_text.replace('\\cdot', '*')
+        cleaned_text = cleaned_text.replace('\\times', 'x')
+        cleaned_text = cleaned_text.replace('\\sqrt', 'sqrt')
+        
+        # Ensure proper line breaks
+        cleaned_text = cleaned_text.replace('\n\n\n', '\n\n')
+        
+        return cleaned_text
     except Exception as e:
+        print(f"Error formatting quiz for PDF: {str(e)}")
         return quiz_text
 
 # Update the PDF creation function to handle the formatted content
 def create_formatted_pdf(quiz_text):
-    # Get OpenAI to format and convert notation to ASCII-safe format
+    # Get formatted content
     formatted_content = format_quiz_for_pdf(quiz_text)
     
     class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 15)
             self.cell(0, 10, 'Practice Quiz', 0, 1, 'C')
-            self.ln(10)
+            self.ln(5)  # Reduced spacing after header
         
         def footer(self):
             self.set_y(-15)
@@ -516,22 +486,19 @@ def create_formatted_pdf(quiz_text):
     pdf.set_font('Arial', size=12)
     pdf.set_auto_page_break(auto=True, margin=15)
     
-    # Process the OpenAI-formatted content
-    lines = formatted_content.split('\n')
-    for line in lines:
-        if '=======' in line:
-            pdf.ln(5)
-            continue
-        
-        try:
-            pdf.multi_cell(0, 10, txt=line)
-        except Exception as e:
-            # If encoding fails, try to remove problematic characters
-            cleaned_line = ''.join(c for c in line if ord(c) < 128)
-            pdf.multi_cell(0, 10, txt=cleaned_line)
-            
-        if not line.strip():
-            pdf.ln(5)
+    # Split content into paragraphs
+    paragraphs = formatted_content.split('\n')
+    
+    for paragraph in paragraphs:
+        if paragraph.strip():  # Only process non-empty lines
+            try:
+                # Clean the text for PDF encoding
+                clean_text = ''.join(char for char in paragraph if ord(char) < 128)
+                pdf.multi_cell(0, 10, txt=clean_text)
+                pdf.ln(5)  # Add some spacing between paragraphs
+            except Exception as e:
+                print(f"Error writing paragraph to PDF: {str(e)}")
+                continue
     
     try:
         return pdf.output(dest='S').encode('latin-1')
