@@ -173,7 +173,7 @@ if not st.session_state.accepted_terms:
     st.markdown("""
         <style>
         .warning-header {
-            color: #ff4b4b;
+            color: white;
             text-align: center;
             padding: 20px;
             margin-bottom: 20px;
@@ -184,6 +184,7 @@ if not st.session_state.accepted_terms:
             border-radius: 10px;
             margin-bottom: 15px;
             border-left: 4px solid #ff4b4b;
+            color: white;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -243,7 +244,7 @@ with st.sidebar:
     st.image('images/QuizGenius.png')
     
     # Row 1: Label
-    st.write('Enter OpenAI API token:')
+    st.write('Enter OpenAI API token:', style={'color': 'white'})
     
     # Row 2: Input box and button in columns
     col1, col2 = st.columns([5,1], gap="small")
@@ -257,10 +258,10 @@ with st.sidebar:
             <style>
             [data-testid="stButton"][aria-label="api_button"] {
                 font-size: 12px;
-                background-color: #dec960;  /* Changed to match logo color */
+                background-color: #FBCD5D;
                 border: none;
                 border-radius: 4px;
-                color: white;  /* Changed to white for better contrast */
+                color: white;
             }
             </style>
             """, unsafe_allow_html=True)
@@ -281,8 +282,8 @@ with st.sidebar:
         menu_icon = "list", 
         default_index = 0,
         styles = {
-            "icon": {"color": "#dec960", "font-size": "20px"},
-            "nav-link": {"font-size": "17px", "text-align": "left", "margin": "5px", "--hover-color": "#262730"},
+            "icon": {"color": "#FBCD5D", "font-size": "20px"},
+            "nav-link": {"font-size": "17px", "text-align": "left", "margin": "5px", "--hover-color": "#262730", "color": "white"},
             "nav-link-selected": {"background-color": "#262730"}          
         })
 
@@ -540,22 +541,23 @@ st.markdown("""
     /* Global text styles */
     .stMarkdown {
         font-family: 'Helvetica Neue', sans-serif;
+        color: white;
     }
     
     /* Headers */
     h1 {
-        color: #1f1f1f;
+        color: white;
         font-weight: 600;
     }
     
     h2, h3 {
-        color: #2c3e50;
+        color: white;
         font-weight: 500;
     }
     
     /* Buttons */
     .stButton>button {
-        background-color: #dec960;
+        background-color: #FBCD5D;
         color: white;
         border-radius: 5px;
         padding: 0.5rem 1rem;
@@ -572,6 +574,7 @@ st.markdown("""
         background-color: #f8f9fa;
         border-radius: 10px;
         border: 1px solid #e9ecef;
+        color: white;
     }
     
     /* Tabs */
@@ -584,7 +587,7 @@ st.markdown("""
         white-space: pre-wrap;
         background-color: transparent;
         border-radius: 4px;
-        color: #2c3e50;
+        color: white;
         font-size: 16px;
     }
     
@@ -605,9 +608,9 @@ if options == "Home":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 10px;'>Key Features</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: #FBCD5D; margin-bottom: 10px;'>Key Features</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: #1f1f1f; min-height: 200px;'>
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: white; min-height: 200px;'>
         <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
         <li style='margin-bottom: 8px;'>• AI-powered subject detection and quiz generation</li>
         <li style='margin-bottom: 8px;'> Multiple question formats and difficulty levels</li>
@@ -619,9 +622,9 @@ if options == "Home":
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 10px;'>Key Benefits</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: #FBCD5D; margin-bottom: 10px;'>Key Benefits</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: #1f1f1f; min-height: 200px;'>
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: white; min-height: 200px;'>
         <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
         <li style='margin-bottom: 8px;'>• Streamlined quiz creation for educators</li>
         <li style='margin-bottom: 8px;'>• Personalized learning experience</li>
