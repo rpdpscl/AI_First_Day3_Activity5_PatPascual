@@ -444,37 +444,78 @@ IMPORTANT FORMATTING RULES:
 
 # Function to format quiz content for PDF using OpenAI API
 def format_quiz_for_pdf(quiz_text):
-    # Return the quiz text directly without sending to OpenAI
-    # Just clean up any problematic characters and formatting
+    messages = [
+        {"role": "system", "content": """
+Role: PDF Formatting Specialist for Educational Content
+
+Task: Convert quiz content into print-ready format while preserving mathematical notation and structure.
+
+Instructions:
+1. Maintain clear section organization:
+   - Time limit at the top
+   - Questions numbered clearly
+   - Multiple choice options indented
+   - Solutions clearly marked
+   
+2. Format Mathematical Expressions:
+   - Convert LaTeX to readable print format
+   - Example: $\\frac{x}{y}$ → (x)/(y)
+   - Example: $x^{2}$ → x^(2)
+   - Example: $\\sqrt{x}$ → √(x)
+   - Example: $\\cdot$ → ×
+   - Example: $3 \\times 10^{8}$ → 3 × 10^(8)
+   
+3. Formatting Rules:
+   - Use clear section breaks
+   - Indent multiple choice options
+   - Preserve question numbering
+   - Mark solutions distinctly
+   - Maintain consistent spacing
+   - Ensure all special characters are PDF-safe
+   
+4. Output Structure:
+   Time Limit: [time]
+   
+   Question 1:
+   [Question text]
+   A) [option]
+   B) [option]
+   C) [option]
+   D) [option]
+   
+   Solution:
+   [Step-by-step solution]
+   
+   [Repeat for each question]
+
+5. Character Constraints:
+   - Use only ASCII characters
+   - Replace special symbols with print-safe alternatives
+   - Maintain mathematical meaning while ensuring printability
+"""},
+        {"role": "user", "content": f"Convert this quiz content into print-ready format: \n\n{quiz_text}"}
+    ]
+    
     try:
-        # Remove any HTML tags
-        cleaned_text = quiz_text.replace('<br>', '\n').replace('</br>', '\n')
-        
-        # Convert LaTeX to simpler notation for PDF
-        cleaned_text = cleaned_text.replace('$', '')  # Remove LaTeX delimiters
-        cleaned_text = cleaned_text.replace('\\frac{', '').replace('}{', '/').replace('}', '')
-        cleaned_text = cleaned_text.replace('\\cdot', '*')
-        cleaned_text = cleaned_text.replace('\\times', 'x')
-        cleaned_text = cleaned_text.replace('\\sqrt', 'sqrt')
-        
-        # Ensure proper line breaks
-        cleaned_text = cleaned_text.replace('\n\n\n', '\n\n')
-        
-        return cleaned_text
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=messages
+        )
+        return response.choices[0].message.content
     except Exception as e:
         print(f"Error formatting quiz for PDF: {str(e)}")
         return quiz_text
 
-# Update the PDF creation function to handle the formatted content
+# Simplified PDF creation function that relies on the OpenAI formatting
 def create_formatted_pdf(quiz_text):
-    # Get formatted content
+    # Get formatted content from OpenAI
     formatted_content = format_quiz_for_pdf(quiz_text)
     
     class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 15)
             self.cell(0, 10, 'Practice Quiz', 0, 1, 'C')
-            self.ln(5)  # Reduced spacing after header
+            self.ln(5)
         
         def footer(self):
             self.set_y(-15)
@@ -483,22 +524,15 @@ def create_formatted_pdf(quiz_text):
     
     pdf = PDF()
     pdf.add_page()
-    pdf.set_font('Arial', size=12)
+    pdf.set_font('Arial', size=11)
     pdf.set_auto_page_break(auto=True, margin=15)
     
-    # Split content into paragraphs
-    paragraphs = formatted_content.split('\n')
-    
-    for paragraph in paragraphs:
-        if paragraph.strip():  # Only process non-empty lines
-            try:
-                # Clean the text for PDF encoding
-                clean_text = ''.join(char for char in paragraph if ord(char) < 128)
-                pdf.multi_cell(0, 10, txt=clean_text)
-                pdf.ln(5)  # Add some spacing between paragraphs
-            except Exception as e:
-                print(f"Error writing paragraph to PDF: {str(e)}")
-                continue
+    # Simply write the OpenAI-formatted content
+    for line in formatted_content.split('\n'):
+        if line.strip():
+            pdf.multi_cell(0, 8, txt=line)
+            if "Question" in line or "Solution:" in line:
+                pdf.ln(3)  # Extra space after question/solution headers
     
     try:
         return pdf.output(dest='S').encode('latin-1')
@@ -587,7 +621,7 @@ if options == "Home":
         <li style='margin-bottom: 8px;'> Multiple question formats and difficulty levels</li>
         <li style='margin-bottom: 8px;'>• Comprehensive answer explanations</li>
         <li style='margin-bottom: 8px;'>• Math-friendly with LaTeX support</li>
-        <li style='margin-bottom: 8px;'>�� Head to Quiz Generator to start creating your quiz!</li>
+        <li style='margin-bottom: 8px;'> Head to Quiz Generator to start creating your quiz!</li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
