@@ -63,9 +63,7 @@ Interdisciplinary Connections:
         # Call OpenAI API
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
-            messages=messages,
-            temperature=0.7,
-            max_tokens=500
+            messages=messages
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -128,9 +126,7 @@ Special Considerations:
         # Call OpenAI API
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
-            messages=messages,
-            temperature=0.7,
-            max_tokens=500
+            messages=messages
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -442,113 +438,91 @@ elif options == "About Us":
 elif options == "Quiz Generator":
     st.title("Quiz Generator")
     
-    # Create tabs for different input methods
-    input_method = st.tabs(["Manual Input", "File Upload", "Website URL"])
-    
-    with input_method[0]:
-        # Manual input interface
-        subject_text = st.text_area("Enter your content:")
-    
-    with input_method[1]:
-        # File upload interface
-        uploaded_file = st.file_uploader("Upload file", type=['pdf', 'docx', 'xlsx', 'xls', 'csv', 'png', 'jpg', 'jpeg'])
-    
-    with input_method[2]:
-        # Website URL interface
-        website_url = st.text_input("Enter website URL:")
-
-    # Common quiz configuration for all input methods
-    st.subheader("Quiz Configuration")
-    col1, col2 = st.columns(2)
-    
+    # Website URL interface with button
+    col1, col2 = st.columns([5,1], gap="small")
     with col1:
-        difficulty = st.selectbox("Select difficulty level:", ["Beginner", "Intermediate", "Advanced"])
-        num_questions = st.number_input("Number of questions:", min_value=1, max_value=20, value=5)
-        specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
-        time_limit = st.number_input("Suggested time limit (minutes):", min_value=5, max_value=180, value=30)
-    
+        website_url = st.text_input("Enter website URL:")
     with col2:
-        question_type = st.multiselect("Select question types:", 
-                                     ["Multiple Choice", "Essay", "Problem Sets", "Problem Solving", "Mixed"],
-                                     default=["Multiple Choice"])
-    
-    # Generate Quiz button
-    if st.button("Generate Quiz"):
-        if not openai.api_key:
-            st.error("Please enter your OpenAI API key first!")
-            st.stop()
-            
-        # Get content based on input method
-        content = None
-        if subject_text:
-            content = subject_text
-        elif uploaded_file:
-            with st.spinner("Processing file..."):
-                content = extract_text_from_file(uploaded_file)
-        elif website_url:
-            try:
-                response = requests.get(website_url)
-                soup = BeautifulSoup(response.text, 'html.parser')
-                content = " ".join([p.get_text() for p in soup.find_all('p')])
-            except Exception as e:
-                st.error(f"Error extracting website content: {str(e)}")
-                st.stop()
-        
-        if not content:
-            st.warning("Please provide input content to generate questions.")
-            st.stop()
+        check_url = st.button('▶', key='url_button')
 
-        with st.spinner('Generating your quiz...'):
-            # Detect subject and suggest format
+    if check_url and website_url:
+        try:
+            response = requests.get(website_url)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            content = " ".join([p.get_text() for p in soup.find_all('p')])
+            
+            # Detect subject and suggest format immediately after URL entry
             detected_subject = detect_subject_area(content)
             st.info(f"Detected subject area: {detected_subject}")
             suggestion = suggest_quiz_format(content)
             if suggestion:
                 st.info(suggestion)
 
-            # Generate quiz
-            user_message = f"""Based on the following content: {content[:4000]}... (truncated)
-            Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
-            {"Focus on these topics: " + specific_topics if specific_topics else ""}
-            Suggested time limit: {time_limit} minutes.
-            Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
-
-            struct = [{"role": "system", "content": System_Prompt}]
-            struct.append({"role": "user", "content": user_message})
+            # Quiz configuration
+            st.subheader("Quiz Configuration")
+            col1, col2 = st.columns(2)
             
-            try:
-                # Generate quiz using OpenAI
-                chat = openai.ChatCompletion.create(
-                    model="gpt-4o-mini",
-                    messages=struct,
-                    temperature=0.7,
-                    max_tokens=2000
-                )
-                quiz_text = chat.choices[0].message.content
-                
-                st.subheader("Generated Quiz:")
-                st.write(quiz_text)
-                
-                # Create PDF file for quiz
-                pdf = FPDF()
-                pdf.add_page()
-                pdf.set_font("Arial", size=12)
-                pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
-                
-                # Split quiz text into lines and add to PDF
-                lines = quiz_text.split('\n')
-                for line in lines:
-                    # Encode line to ASCII, replacing non-ASCII characters
-                    line_ascii = line.encode('ascii', 'replace').decode()
-                    pdf.multi_cell(0, 10, txt=line_ascii)
-                
-                # Download button for quiz
-                st.download_button(
-                    label="Download Quiz (PDF)",
-                    data=pdf.output(dest='S').encode('latin-1'),
-                    file_name="quiz.pdf",
-                    mime="application/pdf"
-                )
+            with col1:
+                difficulty = st.selectbox("Select difficulty level:", ["Beginner", "Intermediate", "Advanced"])
+                num_questions = st.number_input("Number of questions:", min_value=1, max_value=20, value=5)
+                specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
+                time_limit = st.number_input("Suggested time limit (minutes):", min_value=5, max_value=180, value=30)
+            
+            with col2:
+                question_type = st.multiselect("Select question types:", 
+                                             ["Multiple Choice", "Essay", "Problem Sets", "Problem Solving", "Mixed"],
+                                             default=["Multiple Choice"])
+            
+            # Generate Quiz button
+            if st.button("Generate Quiz"):
+                if not openai.api_key:
+                    st.error("Please enter your OpenAI API key first!")
+                    st.stop()
 
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                with st.spinner('Generating your quiz...'):
+                    # Generate quiz
+                    user_message = f"""Based on the following content: {content[:4000]}... (truncated)
+                    Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
+                    {"Focus on these topics: " + specific_topics if specific_topics else ""}
+                    Suggested time limit: {time_limit} minutes.
+                    Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
+
+                    struct = [{"role": "system", "content": System_Prompt}]
+                    struct.append({"role": "user", "content": user_message})
+                    
+                    try:
+                        # Generate quiz using OpenAI
+                        chat = openai.ChatCompletion.create(
+                            model="gpt-4o-mini",
+                            messages=struct
+                        )
+                        quiz_text = chat.choices[0].message.content
+                        
+                        st.subheader("Generated Quiz:")
+                        st.write(quiz_text)
+                        
+                        # Create PDF file for quiz
+                        pdf = FPDF()
+                        pdf.add_page()
+                        pdf.set_font("Arial", size=12)
+                        pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
+                        
+                        # Split quiz text into lines and add to PDF
+                        lines = quiz_text.split('\n')
+                        for line in lines:
+                            # Encode line to ASCII, replacing non-ASCII characters
+                            line_ascii = line.encode('ascii', 'replace').decode()
+                            pdf.multi_cell(0, 10, txt=line_ascii)
+                        
+                        # Download button for quiz
+                        st.download_button(
+                            label="Download Quiz (PDF)",
+                            data=pdf.output(dest='S').encode('latin-1'),
+                            file_name="quiz.pdf",
+                            mime="application/pdf"
+                        )
+
+                    except Exception as e:
+                        st.error(f"An error occurred: {str(e)}")
+        except Exception as e:
+            st.error(f"Error extracting website content: {str(e)}")
