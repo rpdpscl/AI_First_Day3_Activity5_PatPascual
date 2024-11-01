@@ -690,6 +690,13 @@ elif options == "Quiz Generator":
                     st.rerun()
 
         else:
+            # Show subject detection and suggestions first
+            detected_subject = detect_subject_area(st.session_state.website_content)
+            st.info(f"Detected subject area: {detected_subject}")
+            suggestion = suggest_quiz_format(st.session_state.website_content)
+            if suggestion:
+                st.info(suggestion)
+
             # Quiz configuration
             st.subheader("Quiz Configuration")
 
@@ -713,20 +720,13 @@ elif options == "Quiz Generator":
                         placeholder="Example: 'Preparing for midterm exam, focus on chapters 3-4' or 'Weekly practice quiz for calculus class, emphasize derivatives'",
                         height=100)
 
-            # Only process and generate quiz when button is clicked
+            # Only generate quiz when button is clicked
             if st.button("Generate Quiz"):
                 if not openai.api_key:
                     st.error("Please enter your OpenAI API key first!")
                     st.stop()
 
                 with st.spinner('Generating your quiz...'):
-                    # Now detect subject and suggest format
-                    detected_subject = detect_subject_area(st.session_state.website_content)
-                    st.info(f"Detected subject area: {detected_subject}")
-                    suggestion = suggest_quiz_format(st.session_state.website_content)
-                    if suggestion:
-                        st.info(suggestion)
-
                     # Generate quiz
                     user_message = f"""Based on the following content: {st.session_state.website_content[:4000]}... (truncated)
                     Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
