@@ -712,21 +712,34 @@ elif options == "Quiz Generator":
             processed_text = process_math_notation(st.session_state.quiz_text)
             st.markdown(processed_text)
             
-            # Generate and store PDF
-            st.session_state.pdf_data = create_formatted_pdf(st.session_state.quiz_text)
+            # Generate PDF data
+            pdf_data = create_formatted_pdf(st.session_state.quiz_text)
             
-            # Display buttons
+            # Create a container for buttons with custom styling
+            st.markdown("""
+                <style>
+                .button-container {
+                    display: flex;
+                    justify-content: center;
+                    gap: 20px;
+                    margin-top: 20px;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+            
+            # Display buttons side by side
             col1, col2 = st.columns(2)
             with col1:
-                if st.session_state.pdf_data is not None:
+                if pdf_data is not None:
                     st.download_button(
-                        label="Download Quiz (PDF)",
-                        data=st.session_state.pdf_data,
+                        label="📥 Download Quiz (PDF)",
+                        data=pdf_data,
                         file_name="quiz.pdf",
-                        mime="application/pdf"
+                        mime="application/pdf",
+                        key="download_button"
                     )
             with col2:
-                if st.button("Generate New Quiz"):
+                if st.button("🔄 Generate New Quiz", key="new_quiz_button"):
                     st.session_state.show_config = False
                     st.session_state.quiz_generated = False
                     st.session_state.website_content = None
