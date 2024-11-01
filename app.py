@@ -211,34 +211,102 @@ Grading Rubric:
 [Include detailed rubric with scoring criteria]
 """
 
+# Add this near the top, after st.set_page_config
+st.markdown("""
+    <style>
+    /* Global text styles */
+    .stMarkdown {
+        font-family: 'Helvetica Neue', sans-serif;
+    }
+    
+    /* Headers */
+    h1 {
+        color: #1f1f1f;
+        font-weight: 600;
+    }
+    
+    h2, h3 {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+    
+    /* Buttons */
+    .stButton>button {
+        background-color: #dec960;
+        color: white;
+        border-radius: 5px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+    
+    /* Sidebar */
+    .css-1d391kg {
+        padding: 2rem 1rem;
+    }
+    
+    /* Cards/Boxes */
+    .stExpander {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 24px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: transparent;
+        border-radius: 4px;
+        color: #2c3e50;
+        font-size: 16px;
+    }
+    
+    /* Info boxes */
+    .stAlert {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Options : Home
 if options == "Home":
-    st.title("Welcome to QuizGenius!")
+    st.markdown("<h1 style='text-align: center; margin-bottom: 30px;'>Welcome to QuizGenius!</h1>", unsafe_allow_html=True)
     
-    st.markdown("<div style='text-align: center; padding: 20px;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; padding: 20px; margin-bottom: 40px; font-size: 18px;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("### Key Features:")
+        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Features:</h3>", unsafe_allow_html=True)
         st.markdown("""
+        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px;'>
+        
         - AI-powered subject detection and quiz generation
         - Multiple question formats and difficulty levels
         - Comprehensive answer explanations
         - Math-friendly with LaTeX support
         - Multi-format file upload capability
-        """)
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("### Key Benefits:")
+        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Benefits:</h3>", unsafe_allow_html=True)
         st.markdown("""
+        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px;'>
+        
         - 15% average score improvement
         - Personalized learning experience
         - Instant feedback and explanations
         - Time-efficient exam preparation
         - Enhanced conceptual understanding
-        """)
-   
+        </div>
+        """, unsafe_allow_html=True)
+
 # Options : About Us
 elif options == "About Us":
     st.title("About Us")
