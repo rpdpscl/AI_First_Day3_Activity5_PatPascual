@@ -141,6 +141,8 @@ if 'show_config' not in st.session_state:
     st.session_state.show_config = False
 if 'quiz_generated' not in st.session_state:
     st.session_state.quiz_generated = False
+if 'quiz_text' not in st.session_state:
+    st.session_state.quiz_text = None
 
 # Configure Streamlit page settings
 st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
@@ -508,11 +510,11 @@ elif options == "Quiz Generator":
                         model="gpt-4o-mini",
                         messages=struct
                     )
-                    quiz_text = chat.choices[0].message.content
+                    st.session_state.quiz_text = chat.choices[0].message.content
                     st.session_state.quiz_generated = True
                     
                     st.subheader("Generated Quiz:")
-                    st.write(quiz_text)
+                    st.write(st.session_state.quiz_text)
                     
                     # Create PDF file for quiz
                     pdf = FPDF()
@@ -521,7 +523,7 @@ elif options == "Quiz Generator":
                     pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
                     
                     # Split quiz text into lines and add to PDF
-                    lines = quiz_text.split('\n')
+                    lines = st.session_state.quiz_text.split('\n')
                     for line in lines:
                         # Encode line to ASCII, replacing non-ASCII characters
                         line_ascii = line.encode('ascii', 'replace').decode()
@@ -544,4 +546,5 @@ elif options == "Quiz Generator":
                 st.session_state.show_config = False
                 st.session_state.quiz_generated = False
                 st.session_state.website_content = None
+                st.session_state.quiz_text = None
                 st.rerun()
