@@ -40,15 +40,15 @@ def suggest_quiz_format(text, question_types):
     suggestions = []
     detected_subject = detect_subject_area(text)
     
-    # Add format suggestions based on subject and question types
-    if "Multiple Choice" in question_types:
-        suggestions.append("- Multiple choice questions are recommended for testing factual knowledge")
-    
-    if "Problem Solving" in question_types:
-        suggestions.append("- Problem solving questions work well for mathematical or analytical content")
-        
-    if "Essay" in question_types:
-        suggestions.append("- Essay questions are ideal for testing deeper understanding and analysis")
+    # Add format suggestions based on detected subject
+    if "mathematics" in detected_subject.lower() or "physics" in detected_subject.lower():
+        suggestions.append("- Problem solving questions are recommended for mathematical calculations and proofs")
+    elif "history" in detected_subject.lower() or "literature" in detected_subject.lower():
+        suggestions.append("- Essay questions are ideal for analyzing historical events or literary works")
+    elif "biology" in detected_subject.lower() or "chemistry" in detected_subject.lower():
+        suggestions.append("- Multiple choice questions work well for testing scientific concepts and terminology")
+    else:
+        suggestions.append("- Multiple choice questions are recommended as a general assessment format")
         
     return suggestions, detected_subject
 
