@@ -448,46 +448,14 @@ elif options == "Quiz Generator":
     with input_method[0]:
         # Manual input interface
         subject_text = st.text_area("Enter your content:")
-        if subject_text:
-            detected_subject = detect_subject_area(subject_text)
-            st.info(f"Detected subject area: {detected_subject}")
-            suggestion = suggest_quiz_format(subject_text)
-            if suggestion:
-                st.info(suggestion)
     
     with input_method[1]:
         # File upload interface
         uploaded_file = st.file_uploader("Upload file", type=['pdf', 'docx', 'xlsx', 'xls', 'csv', 'png', 'jpg', 'jpeg'])
-        if uploaded_file:
-            with st.spinner("Processing file..."):
-                text = extract_text_from_file(uploaded_file)
-                if text.startswith("Error") or text == "Unsupported file format":
-                    st.error(text)
-                else:
-                    st.success("File processed successfully!")
-                    detected_subject = detect_subject_area(text)
-                    st.info(f"Detected subject area: {detected_subject}")
-                    suggestion = suggest_quiz_format(text)
-                    if suggestion:
-                        st.info(suggestion)
     
     with input_method[2]:
         # Website URL interface
         website_url = st.text_input("Enter website URL:")
-        if website_url:
-            try:
-                response = requests.get(website_url)
-                soup = BeautifulSoup(response.text, 'html.parser')
-                # Extract text from paragraphs
-                text = " ".join([p.get_text() for p in soup.find_all('p')])
-                st.success("Website content extracted successfully!")
-                detected_subject = detect_subject_area(text)
-                st.info(f"Detected subject area: {detected_subject}")
-                suggestion = suggest_quiz_format(text)
-                if suggestion:
-                    st.info(suggestion)
-            except Exception as e:
-                st.error(f"Error extracting website content: {str(e)}")
 
     # Common quiz configuration for all input methods
     st.subheader("Quiz Configuration")
@@ -496,18 +464,13 @@ elif options == "Quiz Generator":
     with col1:
         difficulty = st.selectbox("Select difficulty level:", ["Beginner", "Intermediate", "Advanced"])
         num_questions = st.number_input("Number of questions:", min_value=1, max_value=20, value=5)
+        specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
+        time_limit = st.number_input("Suggested time limit (minutes):", min_value=5, max_value=180, value=30)
     
     with col2:
         question_type = st.multiselect("Select question types:", 
                                      ["Multiple Choice", "Essay", "Problem Sets", "Problem Solving", "Mixed"],
                                      default=["Multiple Choice"])
-    
-    # Advanced options
-    with st.expander("Advanced Options"):
-        specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
-        time_limit = st.number_input("Suggested time limit (minutes):", min_value=5, max_value=180, value=30)
-        include_explanations = st.checkbox("Include detailed explanations", value=True)
-        math_mode = st.checkbox("Enable math mode (LaTeX support)", value=True)
     
     # Generate Quiz button
     if st.button("Generate Quiz"):
@@ -515,28 +478,41 @@ elif options == "Quiz Generator":
             st.error("Please enter your OpenAI API key first!")
             st.stop()
             
-        # Determine which input method was used and create appropriate user message
-        if 'text' in locals():  # For PDF or Website content
-            user_message = f"""Based on the following content: {text[:4000]}... (truncated)
-            Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
-            {"Focus on these topics: " + specific_topics if specific_topics else ""}
-            {"Include detailed explanations for each answer." if include_explanations else ""}
-            Suggested time limit: {time_limit} minutes.
-            {"Use LaTeX notation for mathematical expressions." if math_mode else ""}
-            Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
-        elif 'subject_text' in locals() and subject_text:  # For manual input
-            user_message = f"""Based on the following content: {subject_text}
-            Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
-            {"Focus on these topics: " + specific_topics if specific_topics else ""}
-            {"Include detailed explanations for each answer." if include_explanations else ""}
-            Suggested time limit: {time_limit} minutes.
-            {"Use LaTeX notation for mathematical expressions." if math_mode else ""}
-            Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
-        else:
+        # Get content based on input method
+        content = None
+        if subject_text:
+            content = subject_text
+        elif uploaded_file:
+            with st.spinner("Processing file..."):
+                content = extract_text_from_file(uploaded_file)
+        elif website_url:
+            try:
+                response = requests.get(website_url)
+                soup = BeautifulSoup(response.text, 'html.parser')
+                content = " ".join([p.get_text() for p in soup.find_all('p')])
+            except Exception as e:
+                st.error(f"Error extracting website content: {str(e)}")
+                st.stop()
+        
+        if not content:
             st.warning("Please provide input content to generate questions.")
             st.stop()
 
         with st.spinner('Generating your quiz...'):
+            # Detect subject and suggest format
+            detected_subject = detect_subject_area(content)
+            st.info(f"Detected subject area: {detected_subject}")
+            suggestion = suggest_quiz_format(content)
+            if suggestion:
+                st.info(suggestion)
+
+            # Generate quiz
+            user_message = f"""Based on the following content: {content[:4000]}... (truncated)
+            Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
+            {"Focus on these topics: " + specific_topics if specific_topics else ""}
+            Suggested time limit: {time_limit} minutes.
+            Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
+
             struct = [{"role": "system", "content": System_Prompt}]
             struct.append({"role": "user", "content": user_message})
             
@@ -548,40 +524,28 @@ elif options == "Quiz Generator":
                     temperature=0.7,
                     max_tokens=2000
                 )
-                response = chat.choices[0].message.content
-                
-                # Split response into questions
-                quiz_parts = response.split("\n\n")
-                questions = []
-                
-                for part in quiz_parts:
-                    if part.startswith("Question"):
-                        questions.append(part)
-                
-                quiz_text = "\n\n".join(questions)
+                quiz_text = chat.choices[0].message.content
                 
                 st.subheader("Generated Quiz:")
-                if math_mode:
-                    st.latex(quiz_text)
-                else:
-                    st.write(quiz_text)
+                st.write(quiz_text)
                 
                 # Create PDF file for quiz
-                def create_pdf(content, title):
-                    """Generate PDF with quiz content"""
-                    pdf = FPDF()
-                    pdf.add_page()
-                    pdf.set_font("Arial", size=12)
-                    pdf.cell(200, 10, txt=title, ln=1, align='C')
-                    # Encode content to ASCII, replacing non-ASCII characters
-                    content_ascii = content.encode('ascii', 'replace').decode()
-                    pdf.multi_cell(0, 10, txt=content_ascii)
-                    return pdf.output(dest='S').encode('latin-1')
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=12)
+                pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
+                
+                # Split quiz text into lines and add to PDF
+                lines = quiz_text.split('\n')
+                for line in lines:
+                    # Encode line to ASCII, replacing non-ASCII characters
+                    line_ascii = line.encode('ascii', 'replace').decode()
+                    pdf.multi_cell(0, 10, txt=line_ascii)
                 
                 # Download button for quiz
                 st.download_button(
                     label="Download Quiz (PDF)",
-                    data=create_pdf(quiz_text, "Practice Quiz"),
+                    data=pdf.output(dest='S').encode('latin-1'),
                     file_name="quiz.pdf",
                     mime="application/pdf"
                 )
