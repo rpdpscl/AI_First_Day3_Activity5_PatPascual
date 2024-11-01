@@ -713,7 +713,6 @@ elif options == "Quiz Generator":
                 
                 pdf = PDF()
                 pdf.add_page()
-                # Use Arial font instead of DejaVu
                 pdf.set_font('Arial', size=12)
                 pdf.set_auto_page_break(auto=True, margin=15)
                 
@@ -724,32 +723,43 @@ elif options == "Quiz Generator":
                 lines = unicode_text.split('\n')
                 for line in lines:
                     try:
+                        # Clean the line of problematic characters
+                        cleaned_line = ''.join(char if ord(char) < 128 else ' ' for char in line)
+                        
                         # Format the line based on content type
                         if line.startswith('Question'):
-                            pdf.set_font('Arial', 'B', 12)  # Bold for questions
-                            pdf.multi_cell(0, 10, line)
-                            pdf.set_font('Arial', '', 12)  # Regular for other text
+                            pdf.set_font('Arial', 'B', 12)
+                            pdf.multi_cell(0, 10, cleaned_line)
+                            pdf.set_font('Arial', '', 12)
                         elif line.startswith(('A)', 'B)', 'C)', 'D)')):
-                            pdf.cell(10)  # Add indent
-                            pdf.multi_cell(0, 10, line)
+                            pdf.cell(10)
+                            pdf.multi_cell(0, 10, cleaned_line)
                         else:
-                            pdf.multi_cell(0, 10, line)
+                            pdf.multi_cell(0, 10, cleaned_line)
                         
                         # Add spacing between questions
-                        if not line.strip():
+                        if not cleaned_line.strip():
                             pdf.ln(5)
                     except Exception as e:
                         print(f"Error processing line: {e}")
-                        continue  # Skip problematic lines
+                        continue
                 
                 try:
                     return pdf.output(dest='S').encode('latin-1')
                 except Exception as e:
-                    # If Unicode encoding fails, create a basic ASCII version
+                    print(f"PDF generation error: {str(e)}")
+                    # Create a simplified version if encoding fails
                     pdf = PDF()
                     pdf.add_page()
                     pdf.set_font("Arial", size=12)
-                    pdf.cell(200, 10, "Error: Could not generate PDF with special characters", 0, 1, 'C')
+                    pdf.multi_cell(0, 10, "Quiz Content (Special characters removed for compatibility):")
+                    pdf.ln(10)
+                    
+                    # Add content with special characters removed
+                    for line in lines:
+                        cleaned_line = ''.join(char if ord(char) < 128 else ' ' for char in line)
+                        pdf.multi_cell(0, 10, cleaned_line)
+                    
                     return pdf.output(dest='S').encode('latin-1')
             
             # Generate and store PDF
