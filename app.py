@@ -407,6 +407,27 @@ Special Instructions:
 3. Use appropriate citation formats for literary/historical quotes
 4. Incorporate subject-specific vocabulary
 5. Ensure questions test understanding, not just recall
+
+Time Calculation Guidelines:
+1. Base time per question type:
+   - Multiple Choice: 1-2 minutes
+   - Essay: 15-20 minutes
+   - Problem Sets: 5-10 minutes
+   - Problem Solving: 5-8 minutes
+
+2. Difficulty multipliers:
+   - Beginner: 1x
+   - Intermediate: 1.5x
+   - Advanced: 2x
+
+3. Total time calculation:
+   - Sum of (questions × base time × difficulty multiplier)
+   - Round up to nearest 5 minutes
+   - Add 5 minutes for review
+
+Example:
+5 Multiple Choice (Advanced):
+5 × 2 minutes × 2 = 20 minutes + 5 = 25 minutes total
 """
 
 # Function to convert LaTeX math notation to Unicode for PDF output
@@ -770,7 +791,6 @@ elif options == "Quiz Generator":
                 difficulty = st.selectbox("Select difficulty level:", ["Beginner", "Intermediate", "Advanced"])
                 num_questions = st.number_input("Number of questions:", min_value=1, max_value=20, value=5)
                 specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
-                time_limit = st.number_input("Suggested time limit (minutes):", min_value=5, max_value=180, value=30)
             
             with col2:
                 question_type = st.multiselect("Select question types:", 
@@ -788,7 +808,7 @@ elif options == "Quiz Generator":
                     user_message = f"""Based on the following content: {st.session_state.website_content[:4000]}... (truncated)
                     Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
                     {"Focus on these topics: " + specific_topics if specific_topics else ""}
-                    Suggested time limit: {time_limit} minutes.
+                    Calculate and include appropriate time limit based on question types and difficulty.
                     Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
 
                     struct = [{"role": "system", "content": System_Prompt}]
