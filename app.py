@@ -236,17 +236,24 @@ with st.sidebar:
     with api_col1:
         openai.api_key = st.text_input('Enter OpenAI API token:', type='password', label_visibility="visible")
     with api_col2:
-        # Option 1: Using Unicode triangle
         check_api = st.button('▶', use_container_width=True, key='api_button')
-        # Option 2: Alternative using Streamlit's built-in arrow
-        # check_api = st.button('➤', use_container_width=True, key='api_button')
         
         # Add custom CSS to style the button
         st.markdown("""
             <style>
             [data-testid="stButton"][aria-label="api_button"] {
-                font-size: 16px !important;
+                font-size: 12px !important;
                 padding: 0px !important;
+                height: 38px !important;  /* Match height with input field */
+                margin-top: 0px !important;
+                background-color: transparent !important;
+                border: 1px solid rgba(250, 250, 250, 0.2) !important;
+                border-radius: 4px !important;
+                color: rgb(255, 75, 75) !important;
+            }
+            [data-testid="stButton"][aria-label="api_button"]:hover {
+                border-color: rgb(255, 75, 75) !important;
+                color: rgb(255, 75, 75) !important;
             }
             </style>
             """, unsafe_allow_html=True)
