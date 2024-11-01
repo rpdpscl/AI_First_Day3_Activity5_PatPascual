@@ -246,10 +246,16 @@ with st.sidebar:
                 padding: 0px !important;
                 height: 38px !important;  /* Match height with input field */
                 margin-top: 0px !important;
+                margin-left: 10px !important;  /* Add margin to move button right */
                 background-color: transparent !important;
                 border: 1px solid rgba(250, 250, 250, 0.2) !important;
                 border-radius: 4px !important;
                 color: rgb(255, 75, 75) !important;
+                width: 38px !important;  /* Make button square */
+                min-width: 38px !important;  /* Ensure minimum width */
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
             [data-testid="stButton"][aria-label="api_button"]:hover {
                 border-color: rgb(255, 75, 75) !important;
