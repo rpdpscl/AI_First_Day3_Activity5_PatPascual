@@ -17,6 +17,13 @@ from PIL import Image
 import sympy
 from sympy import simplify, latex
 
+# Add MathJax support for mathematical notation
+st.markdown("""
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+""", unsafe_allow_html=True)
+
 # Function to detect subject area from text
 def detect_subject_area(text):
     # Create message structure for OpenAI API
@@ -276,64 +283,90 @@ Instructions:
 1. Generate questions that are clear, relevant, and aligned with the specified subject matter
 2. Provide detailed explanations for each answer to facilitate learning
 3. Adjust difficulty levels based on user requirements (beginner, intermediate, advanced)
-4. Create questions according to specified format (multiple choice, essay, problem sets, problem solving, case studies, practical tests, or mixed)
+4. Create questions according to specified format (multiple choice, essay, problem sets, problem solving)
 5. Ensure questions test different cognitive levels (recall, application, analysis)
-6. For mathematical questions:
-   - Use proper mathematical notation (superscripts for powers, LaTeX for complex equations)
-   - Accept equivalent answers in different forms
-   - Provide step-by-step solutions
-7. For essay questions, provide clear grading criteria based on:
-   - Content & Understanding (30%)
-   - Organization & Structure (25%)
-   - Evidence & Support (25%)
-   - Language & Style (20%)
 
-Context:
-Users will provide content from which you need to:
-1. Detect the subject area automatically
-2. Generate appropriate questions based on the content
-3. Adapt question formats to suit the subject
-4. Maintain appropriate difficulty level
+Output Format Requirements:
+1. Start with a clear quiz title and subject area
+2. Number all questions sequentially
+3. Separate sections with clear headers
+4. Use consistent formatting for all similar elements
+5. Include a student information section at the top
+
+Mathematical Notation:
+- Use LaTeX notation for all mathematical expressions
+- Format: $equation$ for inline math
+- Format: $$equation$$ for display math
+- Example: $x^2 + 4x + 4 = 0$ or $$\int_0^1 x^2 dx$$
+
+Question Format Templates:
+
+[MULTIPLE CHOICE]
+Question {n}: {clear question text}
+A) {option}
+B) {option}
+C) {option}
+D) {option}
+
+[PROBLEM SOLVING]
+Question {n}: {problem statement}
+Given:
+- {relevant information}
+- {relevant information}
+Required:
+- {what needs to be solved}
+Solution Space:
+[Leave appropriate space for working]
+Answer: _________________
+
+[ESSAY]
+Question {n}: {essay prompt}
+Word Limit: {specify limit}
+Evaluation Criteria:
+- Content & Understanding (30%): {specific requirements}
+- Organization & Structure (25%): {specific requirements}
+- Evidence & Support (25%): {specific requirements}
+- Language & Style (20%): {specific requirements}
+Response Space:
+_____________________
+_____________________
+
+[SHORT ANSWER]
+Question {n}: {question text}
+Answer Space: _________________
+Scoring Guide: {specific requirements}
+
+Answer Key Format:
+[SEPARATE PAGE]
+Question {n}:
+Correct Answer: {detailed answer}
+Explanation: {thorough explanation}
+Common Mistakes: {list typical errors}
+Grading Notes: {scoring guidance}
 
 Constraints:
-- Generate only curriculum-relevant content
-- Maintain academic integrity
-- Provide clear, unambiguous questions
-- Include answer explanations for learning purposes
-- Adapt language to appropriate grade/education level
-- For essay questions, include specific grading rubrics
-- For math questions, include acceptable answer formats
+1. Maintain consistent difficulty throughout
+2. Use clear, unambiguous language
+3. Provide adequate space for responses
+4. Include page numbers for multi-page quizzes
+5. Separate answer key clearly from main quiz
 
-Example Output Format:
-For Multiple Choice:
-Question 1: [Question text]
-A) [Option]
-B) [Option]
-C) [Option]
-D) [Option]
-Hint: [Helpful hint to guide student]
-Correct Answer: [Letter]
-Explanation: [Detailed explanation of why this answer is correct and why others are incorrect]
+Example Quiz Header:
+===============================
+QUIZ TITLE: {Subject} Assessment
+Level: {Beginner/Intermediate/Advanced}
+Time Allowed: {XX} minutes
+Total Points: {XX}
+Student Name: _________________
+Date: _________________
+===============================
 
-For Problem Solving:
-Question 1: [Problem statement]
-Hint: [Helpful hint about approach]
-Solution Approach:
-- [Step 1]
-- [Step 2]
-- [Step 3]
-Acceptable Answers: [List equivalent correct answers]
-Explanation: [Detailed solution walkthrough]
-
-For Essays:
-Question 1: [Essay prompt]
-Hint: [Key points to consider]
-Expected Response Elements:
-- [Key point 1]
-- [Key point 2]
-- [Key point 3]
-Grading Rubric:
-[Include detailed rubric with scoring criteria]
+Remember:
+- Generate questions that are print-ready
+- Include clear spacing between sections
+- Format mathematical notation consistently
+- Provide clear instructions for each section
+- Include total points for each question
 """
 
 # Add this near the top, after st.set_page_config
@@ -412,7 +445,7 @@ if options == "Home":
         <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: #1f1f1f; min-height: 200px;'>
         <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
         <li style='margin-bottom: 8px;'>• AI-powered subject detection and quiz generation</li>
-        <li style='margin-bottom: 8px;'>• Multiple question formats and difficulty levels</li>
+        <li style='margin-bottom: 8px;'> Multiple question formats and difficulty levels</li>
         <li style='margin-bottom: 8px;'>• Comprehensive answer explanations</li>
         <li style='margin-bottom: 8px;'>• Math-friendly with LaTeX support</li>
         <li style='margin-bottom: 8px;'>• Head to Quiz Generator to start creating your quiz!</li>
@@ -470,11 +503,15 @@ elif options == "Quiz Generator":
         if st.session_state.quiz_text:
             # Only show quiz results and related buttons
             st.subheader("Generated Quiz:")
-            st.write(st.session_state.quiz_text)
             
-            col1, col2 = st.columns(2)
+            # Process mathematical notation in quiz text
+            processed_text = st.session_state.quiz_text.replace('^', '**')  # Convert ^ to ** for exponents
+            processed_text = processed_text.replace('**', '^')  # Convert back for display
+            st.markdown(processed_text)
+            
+            # Place buttons side by side in a single row
+            col1, col2, col3 = st.columns([1.5, 1.5, 3])
             with col1:
-                # Show download button if PDF data exists
                 if st.session_state.pdf_data is not None:
                     st.download_button(
                         label="Download Quiz (PDF)",
@@ -483,7 +520,6 @@ elif options == "Quiz Generator":
                         mime="application/pdf"
                     )
             with col2:
-                # Add Generate New Quiz button
                 if st.button("Generate New Quiz"):
                     st.session_state.show_config = False
                     st.session_state.quiz_generated = False
@@ -541,18 +577,19 @@ elif options == "Quiz Generator":
                         st.session_state.quiz_text = chat.choices[0].message.content
                         st.session_state.quiz_generated = True
                         
-                        # Create PDF file for quiz
+                        # Create PDF file for quiz with math support
                         pdf = FPDF()
                         pdf.add_page()
-                        pdf.set_font("Arial", size=12)
+                        pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)  # Add Unicode font support
+                        pdf.set_font("DejaVu", size=12)
                         pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
                         
                         # Split quiz text into lines and add to PDF
                         lines = st.session_state.quiz_text.split('\n')
                         for line in lines:
-                            # Encode line to ASCII, replacing non-ASCII characters
-                            line_ascii = line.encode('ascii', 'replace').decode()
-                            pdf.multi_cell(0, 10, txt=line_ascii)
+                            # Process mathematical notation
+                            line = line.replace('^', '**')  # Convert ^ to ** for exponents
+                            pdf.multi_cell(0, 10, txt=line)
                         
                         # Store PDF data in session state
                         st.session_state.pdf_data = pdf.output(dest='S').encode('latin-1')
