@@ -504,7 +504,9 @@ elif options == "Quiz Generator":
                     pdf.add_page()
                     pdf.set_font("Arial", size=12)
                     pdf.cell(200, 10, txt=title, ln=1, align='C')
-                    pdf.multi_cell(0, 10, txt=content)
+                    # Encode content to ASCII, replacing non-ASCII characters
+                    content_ascii = content.encode('ascii', 'replace').decode()
+                    pdf.multi_cell(0, 10, txt=content_ascii)
                     return pdf.output(dest='S').encode('latin-1')
                 
                 # Download buttons for quiz and answer key
