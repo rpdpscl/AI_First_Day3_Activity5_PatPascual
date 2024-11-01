@@ -437,51 +437,50 @@ def format_quiz_for_pdf(quiz_text):
 Role: You are QuizGenius PDF Formatter, specializing in creating print-ready quiz formats with perfect mathematical notation handling.
 
 Key Requirements:
-1. Convert all LaTeX math to Unicode representations where possible
+1. Convert all LaTeX math to ASCII/Unicode representations where possible
 2. Format complex equations for maximum readability
 3. Ensure consistent spacing and alignment
-4. Preserve special characters and symbols
+4. Use only ASCII characters and basic Unicode symbols that are widely supported
 5. Handle multi-line equations elegantly
 
 Output Format Requirements:
 1. Each question must be clearly numbered and spaced
 2. Mathematical expressions should be:
-   - Simple expressions: Convert to Unicode (e.g., x² instead of $x^2$)
-   - Complex expressions: Preserve LaTeX but simplify when possible
+   - Simple expressions: Convert to ASCII (e.g., x^2 instead of $x^2$)
+   - Complex expressions: Simplify to basic ASCII notation
    - Align equations on separate lines with proper indentation
 
 2. Format Guidelines:
-   - Use Unicode fractions (½, ¾) for simple fractions
-   - Use proper multiplication symbol (×) instead of 'x'
-   - Convert simple superscripts/subscripts to Unicode (H₂O, E=mc²)
-   - Preserve complex LaTeX only when necessary
+   - Use ASCII fractions (1/2, 3/4) instead of Unicode fractions
+   - Use 'x' for multiplication
+   - Use simple superscripts (^) and subscripts (_)
+   - Avoid complex Unicode characters
 
 3. Special Character Handling:
-   - Greek letters: Use Unicode (α, β, γ, θ, π)
-   - Mathematical operators: Use Unicode (±, ≤, ≥, ≠, ∞, ∫, ∑)
-   - Common symbols: Use Unicode (°, ′, ″, √)
+   - Greek letters: Use spelled-out versions (alpha, beta, gamma, theta, pi)
+   - Mathematical operators: Use ASCII (<=, >=, !=, inf)
+   - Common symbols: Use ASCII (deg, ', ", sqrt)
 
 Example Conversions:
-- $x^2$ → x²
-- $H_2O$ → H₂O
-- $\alpha$ → α
-- $\beta$ → β
-- $\theta$ → θ
-- $\pi$ → π
-- $\leq$ → ≤
-- $\geq$ → ≥
-- $\neq$ → ≠
-- $\infty$ → ∞
-- $\int$ → ∫
-- $\sum$ → ∑
-- $\sqrt{x}$ → √x
+- $x^2$ → x^2
+- $H_2O$ → H2O
+- $\alpha$ → alpha
+- $\beta$ → beta
+- $\theta$ → theta
+- $\pi$ → pi
+- $\leq$ → <=
+- $\geq$ → >=
+- $\neq$ → !=
+- $\infty$ → inf
+- $\int$ → integral
+- $\sum$ → sum
+- $\sqrt{x}$ → sqrt(x)
 
-Keep Complex LaTeX Only For:
-- Integrals with limits
-- Multi-line equations
-- Matrix notation
-- Complex fractions
-- Advanced calculus notation
+Complex Expression Handling:
+- Integrals: Write out in words (e.g., "Integral from a to b of f(x) dx")
+- Fractions: Use slash notation (e.g., (a+b)/(c+d))
+- Powers: Use ^ notation (e.g., x^(a+b))
+- Roots: Use sqrt() or ^(1/n) notation
 
 Output Structure:
 ===============================
@@ -491,14 +490,14 @@ Time: [Duration] minutes
 Total Points: [Points]
 ===============================
 
-[Questions with converted notation]
+[Questions with ASCII-safe notation]
 """},
-        {"role": "user", "content": f"Format this quiz content for PDF output, converting mathematical notation to Unicode where possible and preserving complex LaTeX only when necessary: {quiz_text}"}
+        {"role": "user", "content": f"Format this quiz content for PDF output, converting all mathematical notation and special characters to ASCII-safe format: {quiz_text}"}
     ]
     
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4",  # Use GPT-4 for better math handling
+            model="gpt-4o-mini",  # Use GPT-4o-mini for better handling
             messages=messages,
             temperature=0.1  # Lower temperature for more consistent formatting
         )
@@ -508,7 +507,7 @@ Total Points: [Points]
 
 # Update the PDF creation function to handle the formatted content
 def create_formatted_pdf(quiz_text):
-    # Get OpenAI to format and convert notation
+    # Get OpenAI to format and convert notation to ASCII-safe format
     formatted_content = format_quiz_for_pdf(quiz_text)
     
     class PDF(FPDF):
@@ -524,8 +523,7 @@ def create_formatted_pdf(quiz_text):
     
     pdf = PDF()
     pdf.add_page()
-    pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)  # Add Unicode font support
-    pdf.set_font('DejaVu', size=12)
+    pdf.set_font('Arial', size=12)
     pdf.set_auto_page_break(auto=True, margin=15)
     
     # Process the OpenAI-formatted content
@@ -535,12 +533,13 @@ def create_formatted_pdf(quiz_text):
             pdf.ln(5)
             continue
         
-        # Handle any remaining LaTeX that couldn't be converted
-        if '$' in line:
-            # For complex equations, you might want to use a LaTeX renderer here
-            line = line.replace('$', '')  # Temporary solution
-        
-        pdf.multi_cell(0, 10, txt=line)
+        try:
+            pdf.multi_cell(0, 10, txt=line)
+        except Exception as e:
+            # If encoding fails, try to remove problematic characters
+            cleaned_line = ''.join(c for c in line if ord(c) < 128)
+            pdf.multi_cell(0, 10, txt=cleaned_line)
+            
         if not line.strip():
             pdf.ln(5)
     
