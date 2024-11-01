@@ -238,21 +238,28 @@ with st.sidebar:
     with api_col2:
         check_api = st.button('▶', use_container_width=True, key='api_button')
         
-        # Add custom CSS to style the button
+        # Add custom CSS to style the button and fix alignment
         st.markdown("""
             <style>
+            /* Fix input and button container alignment */
+            [data-testid="column"] {
+                padding: 0px !important;
+                margin-top: 24px !important;  /* Align with input label */
+            }
+            
+            /* Style the button */
             [data-testid="stButton"][aria-label="api_button"] {
                 font-size: 12px !important;
                 padding: 0px !important;
                 height: 38px !important;  /* Match height with input field */
                 margin-top: 0px !important;
-                margin-left: 10px !important;  /* Add margin to move button right */
+                margin-left: 10px !important;
                 background-color: transparent !important;
                 border: 1px solid rgba(250, 250, 250, 0.2) !important;
                 border-radius: 4px !important;
                 color: rgb(255, 75, 75) !important;
-                width: 38px !important;  /* Make button square */
-                min-width: 38px !important;  /* Ensure minimum width */
+                width: 38px !important;
+                min-width: 38px !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
