@@ -95,6 +95,9 @@ Interdisciplinary Connections:
 
 # Function to suggest quiz format based on content using OpenAI API
 def suggest_quiz_format(text):
+    # First detect the subject area
+    subject_area = detect_subject_area(text)
+    
     # Create message structure for OpenAI API
     messages = [
         {"role": "system", "content": """
@@ -145,7 +148,13 @@ Special Considerations:
 - [Technical requirements]
 - [Limitations]
 """},
-        {"role": "user", "content": f"Based on this text content, suggest the most appropriate quiz format..."}
+        {"role": "user", "content": f"""Based on the following analysis and content, suggest the most appropriate quiz format:
+
+Subject Area Analysis:
+{subject_area}
+
+Content:
+{text[:1000]}... (truncated)"""}
     ]
     
     try:
