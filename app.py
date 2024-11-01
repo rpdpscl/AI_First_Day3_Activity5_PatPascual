@@ -213,43 +213,42 @@ if not st.session_state.accepted_terms:
     st.markdown("<h1 class='warning-header'>⚠️ Important Warnings and Guidelines</h1>", unsafe_allow_html=True)
     
     st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
-    st.markdown("### 1. Quiz Generation Disclaimer")
+    st.markdown("### 1. API Key Security")
     st.markdown("""
-    - Always review generated quiz content before use
-    - AI may occasionally produce inaccurate or hallucinated content
-    - Verify questions and answers against trusted sources
-    - Generated content should be used for practice purposes only
-    - Not recommended for official testing/assessment
+    - Keep your OpenAI API key secure and private
+    - Never share your API key with others
+    - Ensure proper API key format (starts with 'sk-')
+    - Monitor API usage and costs
     """)
     st.markdown("</div>", unsafe_allow_html=True)
     
     st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
-    st.markdown("### 2. File Upload Guidelines")
+    st.markdown("### 2. URL Content Guidelines")
     st.markdown("""
-    - Maximum file size: 10MB per file
-    - Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG
-    - Do not upload sensitive or confidential materials
-    - Ensure you have rights to use uploaded content
+    - Only use URLs from trusted educational sources
+    - Ensure URLs are accessible and contain relevant content
+    - Maximum of 5 URLs per quiz generation
+    - Content should be appropriate for educational purposes
     """)
     st.markdown("</div>", unsafe_allow_html=True)
     
     st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
-    st.markdown("### 3. Security Warnings")
+    st.markdown("### 3. Quiz Generation Limitations")
     st.markdown("""
-    - Do not upload materials containing personal/sensitive information
-    - Avoid uploading proprietary or classified documents
-    - Be cautious with academic materials to prevent data leakage
-    - Website URLs should be from trusted sources only
+    - Subject detection may require manual verification
+    - Generated questions should be reviewed for accuracy
+    - Mathematical expressions use LaTeX formatting
+    - Quiz difficulty and length affect generation time
     """)
     st.markdown("</div>", unsafe_allow_html=True)
     
     st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
-    st.markdown("### 4. Usage Guidelines")
+    st.markdown("### 4. Output Handling")
     st.markdown("""
-    - Keep API keys secure and do not share them
-    - Use the tool responsibly and ethically
-    - Respect intellectual property rights
-    - Report any issues or concerns to support
+    - Review generated content before use
+    - PDF exports may have formatting limitations
+    - Save important quizzes locally
+    - Report any generation errors or issues
     """)
     st.markdown("</div>", unsafe_allow_html=True)
     
@@ -290,8 +289,10 @@ with st.sidebar:
     if check_api:
         if not openai.api_key:
             st.warning('Please enter your OpenAI API token!', icon='⚠️')
-        elif not (openai.api_key.startswith('sk-') and len(openai.api_key)==51):
-            st.warning('Please enter a valid OpenAI API token!', icon='⚠️')
+        elif not openai.api_key.startswith('sk-'):
+            st.warning('API key should start with "sk-"!', icon='⚠️')
+        elif len(openai.api_key) < 100:  # Adjusted length check
+            st.warning('API key appears to be too short. Please check your key!', icon='⚠️')
         else:
             st.success('Proceed to generating your quiz!', icon='👉')
     
@@ -562,18 +563,18 @@ if options == "Home":
     
     st.markdown("<div style='text-align: center; padding: 10px; margin-bottom: 20px; font-size: 18px; color: white;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         st.markdown("<h3 style='text-align: center; color: #FBCD5D; margin-bottom: 10px;'>Key Features</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: white; min-height: 200px;'>
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: black; min-height: 200px;'>
         <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
-        <li style='margin-bottom: 8px;'>• AI-powered subject detection and quiz generation</li>
-        <li style='margin-bottom: 8px;'> Multiple question formats and difficulty levels</li>
-        <li style='margin-bottom: 8px;'>• Comprehensive answer explanations</li>
-        <li style='margin-bottom: 8px;'>• Math-friendly with LaTeX support</li>
-        <li style='margin-bottom: 8px;'> Head to Quiz Generator to start creating your quiz!</li>
+        <li style='margin-bottom: 8px;'>• URL-based Content Processing</li>
+        <li style='margin-bottom: 8px;'>• Automatic Subject Detection</li>
+        <li style='margin-bottom: 8px;'>• Smart Quiz Format Suggestions</li>
+        <li style='margin-bottom: 8px;'>• LaTeX Math Expression Support</li>
+        <li style='margin-bottom: 8px;'>• PDF Export Functionality</li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -581,13 +582,27 @@ if options == "Home":
     with col2:
         st.markdown("<h3 style='text-align: center; color: #FBCD5D; margin-bottom: 10px;'>Key Benefits</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: white; min-height: 200px;'>
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: black; min-height: 200px;'>
         <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
-        <li style='margin-bottom: 8px;'>• Streamlined quiz creation for educators</li>
-        <li style='margin-bottom: 8px;'>• Personalized learning experience</li>
-        <li style='margin-bottom: 8px;'>• Instant feedback and explanations</li>
-        <li style='margin-bottom: 8px;'>• Time-efficient exam preparation</li>
-        <li style='margin-bottom: 8px;'>• Enhanced conceptual understanding</li>
+        <li style='margin-bottom: 8px;'>• Customizable Difficulty Levels</li>
+        <li style='margin-bottom: 8px;'>• Multiple Question Type Options</li>
+        <li style='margin-bottom: 8px;'>• Flexible Question Count</li>
+        <li style='margin-bottom: 8px;'>• Topic-Specific Focus Areas</li>
+        <li style='margin-bottom: 8px;'>• Detailed Solution Explanations</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
+        st.markdown("<h3 style='text-align: center; color: #FBCD5D; margin-bottom: 10px;'>How to Use</h3>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: black; min-height: 200px;'>
+        <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
+        <li style='margin-bottom: 8px;'>1. Enter OpenAI API Key</li>
+        <li style='margin-bottom: 8px;'>2. Input Content URLs (up to 5)</li>
+        <li style='margin-bottom: 8px;'>3. Review Subject Detection</li>
+        <li style='margin-bottom: 8px;'>4. Configure Quiz Settings</li>
+        <li style='margin-bottom: 8px;'>5. Generate and Download Quiz</li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
