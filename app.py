@@ -108,15 +108,15 @@ with st.sidebar:
     with col2:
         check_api = st.button('▶', key='api_button')
         
-        # Minimal CSS for button styling
+        # Updated CSS for button styling to match logo color
         st.markdown("""
             <style>
             [data-testid="stButton"][aria-label="api_button"] {
                 font-size: 12px;
-                background-color: transparent;
-                border: 1px solid rgba(250, 250, 250, 0.2);
+                background-color: #dec960;  /* Changed to match logo color */
+                border: none;
                 border-radius: 4px;
-                color: rgb(255, 75, 75);
+                color: white;  /* Changed to white for better contrast */
             }
             </style>
             """, unsafe_allow_html=True)
@@ -275,35 +275,37 @@ st.markdown("""
 
 # Options : Home
 if options == "Home":
-    st.markdown("<h1 style='text-align: center; margin-bottom: 30px; color: white;'>Welcome to QuizGenius!</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; margin-bottom: 15px; color: white;'>Welcome to QuizGenius!</h1>", unsafe_allow_html=True)
     
-    st.markdown("<div style='text-align: center; padding: 20px; margin-bottom: 40px; font-size: 18px; color: white;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; padding: 10px; margin-bottom: 20px; font-size: 18px; color: white;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Features</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 10px;'>Key Features</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px; color: #1f1f1f;'>
-        
-        - AI-powered subject detection and quiz generation
-        - Multiple question formats and difficulty levels
-        - Comprehensive answer explanations
-        - Math-friendly with LaTeX support
-        - Multi-format file upload capability
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: #1f1f1f; min-height: 200px;'>
+        <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
+        <li style='margin-bottom: 8px;'>• AI-powered subject detection and quiz generation</li>
+        <li style='margin-bottom: 8px;'>• Multiple question formats and difficulty levels</li>
+        <li style='margin-bottom: 8px;'>• Comprehensive answer explanations</li>
+        <li style='margin-bottom: 8px;'>• Math-friendly with LaTeX support</li>
+        <li style='margin-bottom: 8px;'>• Multi-format file upload capability</li>
+        </ul>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Benefits</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 10px;'>Key Benefits</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px; color: #1f1f1f;'>
-        
-        - 15% average score improvement
-        - Personalized learning experience
-        - Instant feedback and explanations
-        - Time-efficient exam preparation
-        - Enhanced conceptual understanding
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: #1f1f1f; min-height: 200px;'>
+        <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
+        <li style='margin-bottom: 8px;'>• 15% average score improvement</li>
+        <li style='margin-bottom: 8px;'>• Personalized learning experience</li>
+        <li style='margin-bottom: 8px;'>• Instant feedback and explanations</li>
+        <li style='margin-bottom: 8px;'>• Time-efficient exam preparation</li>
+        <li style='margin-bottom: 8px;'>• Enhanced conceptual understanding</li>
+        </ul>
         </div>
         """, unsafe_allow_html=True)
 
