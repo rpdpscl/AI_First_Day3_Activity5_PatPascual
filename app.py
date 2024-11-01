@@ -20,270 +20,88 @@ from sympy import simplify, latex
 # Configure Streamlit page settings
 st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
 
-# Add CSS for flashing warning button
-st.markdown("""
-<style>
-@keyframes flash {
-    0% { background-color: #ff4b4b; }
-    50% { background-color: #ff7b7b; }
-    100% { background-color: #ff4b4b; }
-}
-
-.flash-button {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 10px 20px;
-    background-color: #ff4b4b;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    animation: flash 2s infinite;
-    z-index: 1000;
-}
-
-.warning-content {
-    display: none;
-    position: fixed;
-    top: 70px;
-    right: 20px;
-    width: 400px;
-    padding: 20px;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-}
-</style>
-
-<script>
-function toggleWarning() {
-    var content = document.getElementById("warning-content");
-    if (content.style.display === "none") {
-        content.style.display = "block";
-    } else {
-        content.style.display = "none";
-    }
-}
-</script>
-
-<button class="flash-button" onclick="toggleWarning()">⚠️ Important Warnings</button>
-<div id="warning-content" class="warning-content">
-    <h3>⚠️ IMPORTANT - PLEASE READ</h3>
-    <h4>1. Quiz Generation Disclaimer:</h4>
-    <ul>
-        <li>Always review generated quiz content before use</li>
-        <li>AI may occasionally produce inaccurate or hallucinated content</li>
-        <li>Verify questions and answers against trusted sources</li>
-    </ul>
-    <h4>2. File Upload Guidelines:</h4>
-    <ul>
-        <li>Maximum file size: 10MB per file</li>
-        <li>Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG</li>
-        <li>Do not upload sensitive or confidential materials</li>
-        <li>Ensure you have rights to use uploaded content</li>
-    </ul>
-    <h4>3. Security Warnings:</h4>
-    <ul>
-        <li>Do not upload materials containing personal/sensitive information</li>
-        <li>Avoid uploading proprietary or classified documents</li>
-        <li>Be cautious with academic materials to prevent data leakage</li>
-        <li>Website URLs should be from trusted sources only</li>
-    </ul>
-    <h4>4. Usage Guidelines:</h4>
-    <ul>
-        <li>Generated content is for practice purposes only</li>
-        <li>Not recommended for official testing/assessment</li>
-        <li>Keep API keys secure and do not share them</li>
-    </ul>
-</div>
-""", unsafe_allow_html=True)
-
-# Helper function for extracting text from various file formats
-def extract_text_from_file(uploaded_file):
-    """
-    Extract text content from different file types
-    Args:
-        uploaded_file: File object from Streamlit uploader
-    Returns:
-        Extracted text content
-    """
-    try:
-        # Check file size limit
-        file_size = uploaded_file.size
-        if file_size > 10 * 1024 * 1024:  # 10MB limit
-            return "File too large. Please upload a file smaller than 10MB."
-            
-        file_type = uploaded_file.name.split('.')[-1].lower()
-        
-        # Handle different file formats
-        if file_type == 'pdf':
-            pdf_reader = PyPDF2.PdfReader(uploaded_file)
-            text = ""
-            for page in pdf_reader.pages:
-                text += page.extract_text()
-            return text
-            
-        elif file_type == 'docx':
-            doc = docx.Document(uploaded_file)
-            text = ""
-            for para in doc.paragraphs:
-                text += para.text + "\n"
-            return text
-            
-        elif file_type in ['xlsx', 'xls', 'csv']:
-            df = pd.read_excel(uploaded_file) if file_type in ['xlsx', 'xls'] else pd.read_csv(uploaded_file)
-            return df.to_string()
-            
-        elif file_type in ['png', 'jpg', 'jpeg']:
-            image = Image.open(uploaded_file)
-            text = pytesseract.image_to_string(image)
-            return text
-            
-        else:
-            return "Unsupported file format"
-            
-    except Exception as e:
-        return f"Error processing file: {str(e)}"
-
-# Helper function for subject detection
-def detect_subject_area(text):
-    """
-    Detect subject area based on text content
-    Args:
-        text: Input text to analyze
-    Returns:
-        Detected subject area
-    """
-    text = text.lower()
-    
-    # Define subject keywords
-    subject_keywords = {
-        'Mathematics': ['equation', 'algebra', 'geometry', 'calculus', 'arithmetic', 'mathematics', 'math', 'integral', 'derivative', 'polynomial'],
-        'Science': ['physics', 'chemistry', 'biology', 'experiment', 'scientific', 'science'],
-        'Humanities': ['history', 'literature', 'philosophy', 'art', 'culture', 'society'],
-        'Business': ['economics', 'business', 'finance', 'marketing', 'accounting', 'management'],
-        'Technology': ['programming', 'computer', 'software', 'hardware', 'network', 'coding']
-    }
-    
-    # Check for keyword matches
-    for subject, keywords in subject_keywords.items():
-        if any(keyword in text for keyword in keywords):
-            return subject
-    return "General"
-
-# Helper function for quiz format suggestions
-def suggest_quiz_format(text, selected_formats):
-    """
-    Suggest appropriate quiz formats based on subject
-    Args:
-        text: Content text
-        selected_formats: List of selected quiz formats
-    Returns:
-        List of suggestions and detected subject
-    """
-    subject = detect_subject_area(text)
-    suggestions = []
-    
-    # Subject-specific format suggestions
-    format_suggestions = {
-        "Mathematics": {
-            'avoid': ('Essay', "⚠️ Essay format may not be suitable for mathematical subjects. Consider Problem Sets or Problem Solving instead."),
-            'recommend': [
-                ('Problem Sets', "✨ Problem Sets are highly recommended for mathematical subjects!"),
-                ('Problem Solving', "✨ Problem Solving format is perfect for mathematical proofs and complex equations!")
-            ]
-        },
-        "Science": {
-            'recommend': [
-                ('Multiple Choice', "✨ Multiple Choice questions are effective for testing scientific concepts!"),
-                ('Problem Sets', "✨ Problem Sets would be useful for numerical or experimental problems!"),
-                ('Problem Solving', "✨ Problem Solving format works well for physics calculations and chemical equations!")
-            ]
-        },
-        "Humanities": {
-            'recommend': ('Essay', "✨ Essay questions are highly recommended for humanities subjects!")
-        },
-        "Business": {
-            'recommend': ('Case Studies', "✨ Case Studies are essential for business subjects!")
-        },
-        "Technology": {
-            'recommend': ('Practical Tests', "✨ Practical Tests are recommended for technical subjects!")
-        }
-    }
-    
-    # Add relevant suggestions based on subject
-    if subject in format_suggestions:
-        subject_rules = format_suggestions[subject]
-        if 'avoid' in subject_rules and subject_rules['avoid'][0] in selected_formats:
-            suggestions.append(subject_rules['avoid'][1])
-        if 'recommend' in subject_rules:
-            if isinstance(subject_rules['recommend'], tuple):
-                if subject_rules['recommend'][0] not in selected_formats:
-                    suggestions.append(subject_rules['recommend'][1])
-            else:
-                for format_type, message in subject_rules['recommend']:
-                    if format_type not in selected_formats:
-                        suggestions.append(message)
-    
-    # Add general suggestion for mixed format
-    if 'Mixed' in selected_formats:
-        suggestions.append("👍 Mixed format is a good choice for comprehensive assessment!")
-        
-    return suggestions, subject
-
-# Helper function to check mathematical equivalence
-def check_math_equivalence(student_answer, correct_answer):
-    """
-    Check if two mathematical expressions are equivalent
-    Args:
-        student_answer: Student's answer as string
-        correct_answer: Correct answer as string
-    Returns:
-        Boolean indicating if answers are equivalent
-    """
-    try:
-        student_expr = sympy.sympify(student_answer)
-        correct_expr = sympy.sympify(correct_answer)
-        return simplify(student_expr - correct_expr) == 0
-    except:
-        return False
-
-# Define essay grading rubric
-def get_essay_rubric():
-    """Return standardized essay grading rubric"""
-    return {
-        "Content & Understanding (30%)": {
-            "Excellent (25-30)": "Demonstrates comprehensive understanding of the topic with insightful analysis",
-            "Good (19-24)": "Shows good understanding with some analytical depth",
-            "Fair (13-18)": "Basic understanding with limited analysis",
-            "Poor (0-12)": "Minimal understanding, lacks analysis"
-        },
-        "Organization & Structure (25%)": {
-            "Excellent (21-25)": "Clear, logical flow with strong intro, body, and conclusion",
-            "Good (16-20)": "Generally organized with some structural issues",
-            "Fair (11-15)": "Basic organization but lacks coherence",
-            "Poor (0-10)": "Poor organization, difficult to follow"
-        },
-        "Evidence & Support (25%)": {
-            "Excellent (21-25)": "Strong evidence and examples supporting all arguments",
-            "Good (16-20)": "Adequate evidence for most arguments",
-            "Fair (11-15)": "Limited evidence and support",
-            "Poor (0-10)": "Minimal or no supporting evidence"
-        },
-        "Language & Style (20%)": {
-            "Excellent (17-20)": "Clear, sophisticated language with no major errors",
-            "Good (13-16)": "Clear language with minor errors",
-            "Fair (9-12)": "Some language issues that affect clarity",
-            "Poor (0-8)": "Significant language issues"
-        }
-    }
-
 # Set up sidebar with API key input and navigation
 with st.sidebar:
     st.image('images/QuizGenius.png')
+    
+    # Add warning button below logo
+    st.markdown("""
+    <style>
+    @keyframes flash {
+        0% { background-color: #ff4b4b; }
+        50% { background-color: #ff7b7b; }
+        100% { background-color: #ff4b4b; }
+    }
+
+    .flash-button {
+        padding: 10px 20px;
+        background-color: #ff4b4b;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        animation: flash 2s infinite;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .warning-content {
+        display: none;
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        width: 400px;
+        padding: 20px;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    </style>
+
+    <script>
+    function toggleWarning() {
+        var content = document.getElementById("warning-content");
+        if (content.style.display === "none") {
+            content.style.display = "block";
+        } else {
+            content.style.display = "none";
+        }
+    }
+    </script>
+
+    <button class="flash-button" onclick="toggleWarning()">⚠️ Important Warnings</button>
+    <div id="warning-content" class="warning-content">
+        <h3>⚠️ IMPORTANT - PLEASE READ</h3>
+        <h4>1. Quiz Generation Disclaimer:</h4>
+        <ul>
+            <li>Always review generated quiz content before use</li>
+            <li>AI may occasionally produce inaccurate or hallucinated content</li>
+            <li>Verify questions and answers against trusted sources</li>
+        </ul>
+        <h4>2. File Upload Guidelines:</h4>
+        <ul>
+            <li>Maximum file size: 10MB per file</li>
+            <li>Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG</li>
+            <li>Do not upload sensitive or confidential materials</li>
+            <li>Ensure you have rights to use uploaded content</li>
+        </ul>
+        <h4>3. Security Warnings:</h4>
+        <ul>
+            <li>Do not upload materials containing personal/sensitive information</li>
+            <li>Avoid uploading proprietary or classified documents</li>
+            <li>Be cautious with academic materials to prevent data leakage</li>
+            <li>Website URLs should be from trusted sources only</li>
+        </ul>
+        <h4>4. Usage Guidelines:</h4>
+        <ul>
+            <li>Generated content is for practice purposes only</li>
+            <li>Not recommended for official testing/assessment</li>
+            <li>Keep API keys secure and do not share them</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Row 1: Label
     st.write('Enter OpenAI API token:')
