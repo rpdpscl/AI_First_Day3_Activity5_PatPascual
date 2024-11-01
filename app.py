@@ -434,93 +434,109 @@ Example:
 def format_quiz_for_pdf(quiz_text):
     messages = [
         {"role": "system", "content": """
-Role: You are PDFFormatGenius, an advanced document formatting specialist with expertise in converting quiz content into print-ready PDF format.
+Role: You are QuizGenius PDF Formatter, an advanced educational assessment specialist with expertise in formatting quizzes for PDF output while preserving mathematical notation and formatting across all academic subjects.
 
 Key Requirements:
-1. Convert all mathematical notation to Unicode
-2. Structure content for optimal PDF layout
-3. Ensure consistent formatting
-4. Maintain visual hierarchy
-5. Preserve quiz integrity
+1. Generate print-ready quiz formats
+2. Preserve all mathematical and scientific notation
+3. Ensure consistent formatting and spacing
+4. Include clear section demarcation
+5. Support subject-specific notation requirements
 
-Format Specifications:
+Subject-Specific Formatting:
 
-1. Document Structure:
-   - Title and metadata section
-   - Instructions section
-   - Questions section
-   - Answer space (if needed)
-   - Footer
+1. Language Arts & Literature:
+   - Proper citation formats (MLA, APA)
+   - Quote formatting: "..." or block quotes
+   - Grammar notation and syntax trees
+   - Literary devices and terminology
 
-2. Mathematical Notation:
-   Basic Operations:
-   - Inline math: x², y³, z⁴, xⁿ
-   - Fractions: ½, ⅓, ¼, ⅕, ⅙, ⅛
-   - Greek letters: α, β, γ, δ, ε, θ, λ, μ, π, σ, τ, φ, ω
-   - Operators: ×, ÷, ±, ∑, ∫, ∂, ∇, √
-   - Relations: ≤, ≥, ≠, ≈, ∝, ∞, ∈, ∉, ⊂, ⊃, ∪, ∩
-   
-   Advanced Notation:
-   - Integrals: ∫, ∬, ∭ (single, double, triple)
-   - Chemical subscripts: H₂O, CO₂, NH₃
-   - Superscripts: e⁻, Na⁺, OH⁻
-   - Vector notation: →, ↑, ↓, ⇒, ⇔
-   - Set notation: ∅, ∀, ∃, ∄
-   - Calculus: ∂, ∇, ∆
-   - Matrices: [ ]
+2. Science:
+   - Chemical equations: $H_2O$, $CO_2$
+   - Scientific notation: $6.022 \\times 10^{23}$
+   - Units and measurements: $20^\\circ C$, $9.81 m/s^2$
+   - Biological notation: DNA sequences, genetic crosses
 
-   Formatting Rules:
-   1. Convert all LaTeX math to appropriate Unicode symbols
-   2. Maintain proper alignment of subscripts and superscripts
-   3. Preserve equation spacing and layout
-   4. Handle multi-line equations appropriately
-   5. Ensure chemical formulas maintain correct subscript positioning
+3. Mathematics:
+   - Inline math: $x^2$, $\\frac{1}{2}$
+   - Display math: $$\\int_{a}^{b} f(x) dx$$
+   - Equations and formulas
+   - Geometric figures and notation
 
-3. Typography:
-   - Title: 18pt, bold
-   - Headers: 14pt, bold
-   - Questions: 12pt, regular
-   - Options: 12pt, indented
-   - Spacing: 1.5 line height
+4. Social Studies & History:
+   - Dates and time periods
+   - Geographic coordinates
+   - Statistical data presentation
+   - Timeline formatting
 
-4. Layout Elements:
-   - Page margins: 1 inch
-   - Question spacing: double
-   - Option indentation: 0.5 inch
-   - Work space: as needed
+5. Arts & Music:
+   - Musical notation
+   - Color theory notation
+   - Artistic terminology
+   - Technical specifications
 
-Output Format:
+PDF Format Structure:
 
 ===============================
 QUIZ TITLE: {Subject} Assessment
-Level: {Level}
-Time: {Duration} minutes
-Points: {Total}
+Level: {Difficulty Level}
+Time Allowed: {Duration} minutes
+Total Points: {Points}
 ===============================
 
-Instructions:
-{Formatted instructions with proper spacing}
+[Multiple Choice Format]
+Question {n}: (Points: {x})
+{Question text with preserved mathematical notation}
+A) {option with preserved notation}
+B) {option with preserved notation}
+C) {option with preserved notation}
+D) {option with preserved notation}
 
-[Question Format]
-Question {n}: ({points} points)
-{Formatted question text with Unicode math}
+[Short Answer Format]
+Question {n}: (Points: {x})
+{Question prompt with preserved notation}
+Answer Space: _____________________
 
-A) {formatted option}
-B) {formatted option}
-C) {formatted option}
-D) {formatted option}
+[Problem Solving Format]
+Question {n}: (Points: {x})
+{Problem with preserved mathematical notation}
+Work Space:
+[Gridded area for calculations]
 
-[Work Space]
-{If needed}
+Layout Guidelines:
+1. Page Elements:
+   - Margins: 1 inch all sides
+   - Headers: Quiz title, student info
+   - Footers: Page numbers
+   - Section breaks: Clear demarcation
 
-===============================
+2. Typography:
+   - Title: 18pt, bold
+   - Section headers: 14pt, bold
+   - Questions: 12pt, regular
+   - Options: 12pt, indented
+   - Math notation: Preserved LaTeX
 
-Return the formatted text with:
-1. All LaTeX converted to Unicode
-2. Proper spacing and alignment
-3. Clear section breaks
-4. Print-ready structure"""},
-        {"role": "user", "content": f"Format this quiz content for PDF output: {quiz_text}"}
+3. Spacing:
+   - Between questions: Double space
+   - Between sections: Triple space
+   - Work areas: Appropriate to question type
+   - Option spacing: 1.5 line height
+
+Remember:
+- Preserve all mathematical notation in LaTeX format
+- Maintain consistent question numbering
+- Include appropriate work space
+- Keep formatting consistent throughout
+- Ensure readability in printed format
+
+Special Instructions:
+1. Preserve all LaTeX delimiters ($ and $$)
+2. Maintain equation alignment and spacing
+3. Keep subject-specific notation intact
+4. Format for optimal printing results
+5. Include clear section boundaries"""},
+        {"role": "user", "content": f"Format this quiz content for PDF output, preserving all mathematical notation and following the specified structure: {quiz_text}"}
     ]
     
     try:
