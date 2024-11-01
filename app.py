@@ -275,16 +275,16 @@ st.markdown("""
 
 # Options : Home
 if options == "Home":
-    st.markdown("<h1 style='text-align: center; margin-bottom: 30px;'>Welcome to QuizGenius!</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; margin-bottom: 30px; color: white;'>Welcome to QuizGenius!</h1>", unsafe_allow_html=True)
     
-    st.markdown("<div style='text-align: center; padding: 20px; margin-bottom: 40px; font-size: 18px;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; padding: 20px; margin-bottom: 40px; font-size: 18px; color: white;'>QuizGenius is your intelligent companion for creating customized practice quizzes. Our AI-powered system automatically detects subjects and generates tailored questions to enhance your learning experience and test preparation.</div>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Features:</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Features</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px;'>
+        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px; color: #1f1f1f;'>
         
         - AI-powered subject detection and quiz generation
         - Multiple question formats and difficulty levels
@@ -295,9 +295,9 @@ if options == "Home":
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Benefits:</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: #dec960; margin-bottom: 20px;'>Key Benefits</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px;'>
+        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; font-size: 16px; color: #1f1f1f;'>
         
         - 15% average score improvement
         - Personalized learning experience
