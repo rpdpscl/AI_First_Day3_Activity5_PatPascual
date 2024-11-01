@@ -674,6 +674,10 @@ elif options == "Quiz Generator":
             st.subheader("Generated Quiz:")
             st.markdown(st.session_state.quiz_text)
             
+            # Generate PDF data if it doesn't exist
+            if st.session_state.pdf_data is None:
+                st.session_state.pdf_data = create_formatted_pdf(st.session_state.quiz_text)
+            
             st.markdown("---")
             
             left_col, right_col = st.columns(2)
@@ -693,6 +697,7 @@ elif options == "Quiz Generator":
                     st.session_state.url_processed = False
                     st.session_state.quiz_generated = False
                     st.session_state.quiz_text = None
+                    st.session_state.pdf_data = None  # Also clear PDF data
                     st.rerun()
 
         else:
@@ -748,6 +753,8 @@ elif options == "Quiz Generator":
                             messages=struct
                         )
                         st.session_state.quiz_text = chat.choices[0].message.content
+                        # Generate PDF data immediately after quiz generation
+                        st.session_state.pdf_data = create_formatted_pdf(st.session_state.quiz_text)
                         st.session_state.quiz_generated = True
                         st.rerun()
                     except Exception as e:
