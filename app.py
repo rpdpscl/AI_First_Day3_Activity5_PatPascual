@@ -135,6 +135,12 @@ Special Considerations:
 # Add session state initialization
 if 'accepted_terms' not in st.session_state:
     st.session_state.accepted_terms = False
+if 'website_content' not in st.session_state:
+    st.session_state.website_content = None
+if 'show_config' not in st.session_state:
+    st.session_state.show_config = False
+if 'quiz_generated' not in st.session_state:
+    st.session_state.quiz_generated = False
 
 # Configure Streamlit page settings
 st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
@@ -438,91 +444,104 @@ elif options == "About Us":
 elif options == "Quiz Generator":
     st.title("Quiz Generator")
     
-    # Website URL interface with button
-    col1, col2 = st.columns([5,1], gap="small")
-    with col1:
-        website_url = st.text_input("Enter website URL:")
-    with col2:
-        check_url = st.button('▶', key='url_button')
+    if not st.session_state.show_config:
+        # Website URL interface with button
+        col1, col2 = st.columns([5,1], gap="small")
+        with col1:
+            website_url = st.text_input("Enter website URL:")
+        with col2:
+            check_url = st.button('▶', key='url_button')
 
-    if check_url and website_url:
-        try:
-            response = requests.get(website_url)
-            soup = BeautifulSoup(response.text, 'html.parser')
-            content = " ".join([p.get_text() for p in soup.find_all('p')])
-            
-            # Detect subject and suggest format immediately after URL entry
-            detected_subject = detect_subject_area(content)
-            st.info(f"Detected subject area: {detected_subject}")
-            suggestion = suggest_quiz_format(content)
-            if suggestion:
-                st.info(suggestion)
+        if check_url and website_url:
+            try:
+                response = requests.get(website_url)
+                soup = BeautifulSoup(response.text, 'html.parser')
+                st.session_state.website_content = " ".join([p.get_text() for p in soup.find_all('p')])
+                st.session_state.show_config = True
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error extracting website content: {str(e)}")
+    
+    if st.session_state.show_config:
+        # Detect subject and suggest format
+        detected_subject = detect_subject_area(st.session_state.website_content)
+        st.info(f"Detected subject area: {detected_subject}")
+        suggestion = suggest_quiz_format(st.session_state.website_content)
+        if suggestion:
+            st.info(suggestion)
 
-            # Quiz configuration
-            st.subheader("Quiz Configuration")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                difficulty = st.selectbox("Select difficulty level:", ["Beginner", "Intermediate", "Advanced"])
-                num_questions = st.number_input("Number of questions:", min_value=1, max_value=20, value=5)
-                specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
-                time_limit = st.number_input("Suggested time limit (minutes):", min_value=5, max_value=180, value=30)
-            
-            with col2:
-                question_type = st.multiselect("Select question types:", 
-                                             ["Multiple Choice", "Essay", "Problem Sets", "Problem Solving", "Mixed"],
-                                             default=["Multiple Choice"])
-            
-            # Generate Quiz button
-            if st.button("Generate Quiz"):
-                if not openai.api_key:
-                    st.error("Please enter your OpenAI API key first!")
-                    st.stop()
+        # Quiz configuration
+        st.subheader("Quiz Configuration")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            difficulty = st.selectbox("Select difficulty level:", ["Beginner", "Intermediate", "Advanced"])
+            num_questions = st.number_input("Number of questions:", min_value=1, max_value=20, value=5)
+            specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
+            time_limit = st.number_input("Suggested time limit (minutes):", min_value=5, max_value=180, value=30)
+        
+        with col2:
+            question_type = st.multiselect("Select question types:", 
+                                         ["Multiple Choice", "Essay", "Problem Sets", "Problem Solving", "Mixed"],
+                                         default=["Multiple Choice"])
+        
+        # Generate Quiz button
+        if st.button("Generate Quiz"):
+            if not openai.api_key:
+                st.error("Please enter your OpenAI API key first!")
+                st.stop()
 
-                with st.spinner('Generating your quiz...'):
-                    # Generate quiz
-                    user_message = f"""Based on the following content: {content[:4000]}... (truncated)
-                    Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
-                    {"Focus on these topics: " + specific_topics if specific_topics else ""}
-                    Suggested time limit: {time_limit} minutes.
-                    Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
+            with st.spinner('Generating your quiz...'):
+                # Generate quiz
+                user_message = f"""Based on the following content: {st.session_state.website_content[:4000]}... (truncated)
+                Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
+                {"Focus on these topics: " + specific_topics if specific_topics else ""}
+                Suggested time limit: {time_limit} minutes.
+                Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
 
-                    struct = [{"role": "system", "content": System_Prompt}]
-                    struct.append({"role": "user", "content": user_message})
+                struct = [{"role": "system", "content": System_Prompt}]
+                struct.append({"role": "user", "content": user_message})
+                
+                try:
+                    # Generate quiz using OpenAI
+                    chat = openai.ChatCompletion.create(
+                        model="gpt-4o-mini",
+                        messages=struct
+                    )
+                    quiz_text = chat.choices[0].message.content
+                    st.session_state.quiz_generated = True
                     
-                    try:
-                        # Generate quiz using OpenAI
-                        chat = openai.ChatCompletion.create(
-                            model="gpt-4o-mini",
-                            messages=struct
-                        )
-                        quiz_text = chat.choices[0].message.content
-                        
-                        st.subheader("Generated Quiz:")
-                        st.write(quiz_text)
-                        
-                        # Create PDF file for quiz
-                        pdf = FPDF()
-                        pdf.add_page()
-                        pdf.set_font("Arial", size=12)
-                        pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
-                        
-                        # Split quiz text into lines and add to PDF
-                        lines = quiz_text.split('\n')
-                        for line in lines:
-                            # Encode line to ASCII, replacing non-ASCII characters
-                            line_ascii = line.encode('ascii', 'replace').decode()
-                            pdf.multi_cell(0, 10, txt=line_ascii)
-                        
-                        # Download button for quiz
-                        st.download_button(
-                            label="Download Quiz (PDF)",
-                            data=pdf.output(dest='S').encode('latin-1'),
-                            file_name="quiz.pdf",
-                            mime="application/pdf"
-                        )
+                    st.subheader("Generated Quiz:")
+                    st.write(quiz_text)
+                    
+                    # Create PDF file for quiz
+                    pdf = FPDF()
+                    pdf.add_page()
+                    pdf.set_font("Arial", size=12)
+                    pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
+                    
+                    # Split quiz text into lines and add to PDF
+                    lines = quiz_text.split('\n')
+                    for line in lines:
+                        # Encode line to ASCII, replacing non-ASCII characters
+                        line_ascii = line.encode('ascii', 'replace').decode()
+                        pdf.multi_cell(0, 10, txt=line_ascii)
+                    
+                    # Download button for quiz
+                    st.download_button(
+                        label="Download Quiz (PDF)",
+                        data=pdf.output(dest='S').encode('latin-1'),
+                        file_name="quiz.pdf",
+                        mime="application/pdf"
+                    )
 
-                    except Exception as e:
-                        st.error(f"An error occurred: {str(e)}")
-        except Exception as e:
-            st.error(f"Error extracting website content: {str(e)}")
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+
+        # Add Generate New Quiz button that resets the state
+        if st.session_state.quiz_generated:
+            if st.button("Generate New Quiz"):
+                st.session_state.show_config = False
+                st.session_state.quiz_generated = False
+                st.session_state.website_content = None
+                st.rerun()
