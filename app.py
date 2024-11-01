@@ -22,8 +22,20 @@ st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
 
 # Add MathJax support for mathematical notation
 st.markdown("""
-    <script type="text/javascript" async
-        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    <script type="text/javascript">
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
     </script>
 """, unsafe_allow_html=True)
 
@@ -504,12 +516,63 @@ elif options == "Quiz Generator":
             # Only show quiz results and related buttons
             st.subheader("Generated Quiz:")
             
-            # Process mathematical notation in quiz text
-            processed_text = st.session_state.quiz_text.replace('^', '**')  # Convert ^ to ** for exponents
-            processed_text = processed_text.replace('**', '^')  # Convert back for display
+            # Process mathematical notation for web display
+            def process_math_notation(text):
+                # Replace simple exponents (x^2 -> x²)
+                text = text.replace('x^2', 'x²')
+                text = text.replace('x^3', 'x³')
+                # Wrap LaTeX expressions in proper delimiters
+                text = text.replace('\\(', '$')
+                text = text.replace('\\)', '$')
+                text = text.replace('\\[', '$$')
+                text = text.replace('\\]', '$$')
+                return text
+            
+            processed_text = process_math_notation(st.session_state.quiz_text)
             st.markdown(processed_text)
             
-            # Place buttons side by side in a single row
+            # Create PDF with proper formatting
+            def create_formatted_pdf(quiz_text):
+                class PDF(FPDF):
+                    def header(self):
+                        self.set_font('Arial', 'B', 15)
+                        self.cell(0, 10, 'Practice Quiz', 0, 1, 'C')
+                        self.ln(10)
+                    
+                    def footer(self):
+                        self.set_y(-15)
+                        self.set_font('Arial', 'I', 8)
+                        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+                
+                pdf = PDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=12)
+                pdf.set_auto_page_break(auto=True, margin=15)
+                
+                # Process text for PDF
+                lines = quiz_text.split('\n')
+                for line in lines:
+                    # Handle question numbers and options
+                    if line.startswith('Question'):
+                        pdf.set_font('Arial', 'B', 12)
+                        pdf.multi_cell(0, 10, line)
+                        pdf.set_font('Arial', '', 12)
+                    elif line.startswith(('A)', 'B)', 'C)', 'D)')):
+                        pdf.cell(10)  # Add indent
+                        pdf.multi_cell(0, 10, line)
+                    else:
+                        pdf.multi_cell(0, 10, line)
+                    
+                    # Add some spacing between questions
+                    if not line.strip():
+                        pdf.ln(5)
+                
+                return pdf.output(dest='S').encode('latin-1')
+            
+            # Generate and store PDF
+            st.session_state.pdf_data = create_formatted_pdf(st.session_state.quiz_text)
+            
+            # Display buttons
             col1, col2, col3 = st.columns([1.5, 1.5, 3])
             with col1:
                 if st.session_state.pdf_data is not None:
