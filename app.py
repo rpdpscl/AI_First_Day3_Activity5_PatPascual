@@ -348,6 +348,29 @@ Content Requirements:
    - Intermediate: 15 minutes per question
    - Advanced: 20 minutes per question
 
+   Additional Time Allowances:
+   - Reading time: 5 minutes
+   - Planning time: 5 minutes
+   - Review time: 10% of total quiz time
+   
+   Total Time Calculation:
+   1. Sum the time for all questions based on type and difficulty
+   2. Add reading time (5 minutes)
+   3. Add planning time (5 minutes)
+   4. Add 10% of subtotal for review
+   5. Round up to nearest 5 minutes
+   
+   Example:
+   5 Multiple Choice (Intermediate) = 5 × 1.5 = 7.5 minutes
+   2 Problem Solving (Intermediate) = 2 × 5 = 10 minutes
+   Subtotal = 17.5 minutes
+   + Reading time = 5 minutes
+   + Planning time = 5 minutes
+   Subtotal = 27.5 minutes
+   + Review time (10%) = 2.75 minutes
+   Total = 30.25 minutes
+   Rounded = 35 minutes
+
 Constraints:
 1. Mathematical Notation Rules:
    - ALL mathematical expressions MUST be in LaTeX mode using $ or $$
@@ -677,18 +700,31 @@ elif options == "Quiz Generator":
 
             # Quiz configuration
             st.subheader("Quiz Configuration")
-            col1, col2 = st.columns(2)
-            
+
+            # Row 1: Three columns for main settings
+            col1, col2, col3 = st.columns(3)
+
             with col1:
-                difficulty = st.selectbox("Select difficulty level:", ["Beginner", "Intermediate", "Advanced"])
-                num_questions = st.number_input("Number of questions:", min_value=1, max_value=20, value=5)
-                specific_topics = st.text_area("Specific topics or concepts to focus on (optional):")
-            
+                difficulty = st.selectbox("Difficulty Level:", ["Beginner", "Intermediate", "Advanced"])
+
             with col2:
-                question_type = st.multiselect("Select question types:", 
-                                             ["Multiple Choice", "Essay", "Problem Sets", "Problem Solving", "Mixed"],
-                                             default=["Multiple Choice"])
-            
+                question_type = st.selectbox("Question Type:", 
+                                           ["Multiple Choice", "Problem Solving", "Essay", "Mixed"],
+                                           help="Mixed will create a balanced combination of different question types")
+
+            with col3:
+                num_questions = st.number_input("Number of Questions:", 
+                                              min_value=1, 
+                                              max_value=100, 
+                                              value=5,
+                                              help="Choose between 1-100 questions")
+
+            # Row 2: Full-width text area
+            st.text_area("Quiz Context and Focus Areas:",
+                        help="Help us understand your goals! What's the purpose of this quiz? Any specific topics or concepts you want to focus on?",
+                        placeholder="Example: 'Preparing for midterm exam, focus on chapters 3-4' or 'Weekly practice quiz for calculus class, emphasize derivatives'",
+                        height=100)
+
             # Generate Quiz button
             if st.button("Generate Quiz"):
                 if not openai.api_key:
