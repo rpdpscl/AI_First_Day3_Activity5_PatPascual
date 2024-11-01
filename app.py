@@ -181,6 +181,14 @@ if 'quiz_text' not in st.session_state:
 if 'pdf_data' not in st.session_state:
     st.session_state.pdf_data = None
 
+# Initialize additional session state variables
+if 'detected_subject' not in st.session_state:
+    st.session_state.detected_subject = None
+if 'format_suggestion' not in st.session_state:
+    st.session_state.format_suggestion = None
+if 'url_processed' not in st.session_state:
+    st.session_state.url_processed = False
+
 # Display warning page for first-time users
 if not st.session_state.accepted_terms:
     st.markdown("""
@@ -635,8 +643,8 @@ if options == "Home":
 elif options == "Quiz Generator":
     st.title("Quiz Generator")
     
-    if not st.session_state.show_config:
-        # Website URL interface with button
+    if not st.session_state.url_processed:
+        # Step 1: Get URL
         col1, col2 = st.columns([5,1], gap="small")
         with col1:
             website_url = st.text_input("Enter website URL:")
@@ -645,91 +653,88 @@ elif options == "Quiz Generator":
 
         if check_url and website_url:
             try:
-                response = requests.get(website_url)
-                soup = BeautifulSoup(response.text, 'html.parser')
-                st.session_state.website_content = " ".join([p.get_text() for p in soup.find_all('p')])
-                st.session_state.show_config = True
-                st.rerun()
+                with st.spinner('Processing URL content...'):
+                    # Process URL
+                    response = requests.get(website_url)
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    st.session_state.website_content = " ".join([p.get_text() for p in soup.find_all('p')])
+                    
+                    # Steps 2 & 3: Detect subject and suggest format
+                    st.session_state.detected_subject = detect_subject_area(st.session_state.website_content)
+                    st.session_state.format_suggestion = suggest_quiz_format(st.session_state.website_content)
+                    
+                    st.session_state.url_processed = True
+                    st.rerun()
             except Exception as e:
                 st.error(f"Error extracting website content: {str(e)}")
     
-    if st.session_state.show_config:
+    else:
         if st.session_state.quiz_text:
-            # Display the generated quiz
+            # Display generated quiz and buttons
             st.subheader("Generated Quiz:")
             st.markdown(st.session_state.quiz_text)
             
-            # Add a separator
             st.markdown("---")
             
-            # Create two columns for the buttons
             left_col, right_col = st.columns(2)
             
-            # Generate PDF data
-            pdf_data = create_formatted_pdf(st.session_state.quiz_text)
-            
-            # Left column: Download PDF button
             with left_col:
-                if pdf_data is not None:
+                if st.session_state.pdf_data is not None:
                     st.download_button(
                         label="📥 Download Quiz (PDF)",
-                        data=pdf_data,
+                        data=st.session_state.pdf_data,
                         file_name="quiz.pdf",
                         mime="application/pdf",
                         key="download_pdf"
                     )
             
-            # Right column: Generate New Quiz button
             with right_col:
                 if st.button("🔄 Generate New Quiz", key="new_quiz"):
-                    # Reset all relevant session state variables
-                    st.session_state.show_config = False
+                    st.session_state.url_processed = False
                     st.session_state.quiz_generated = False
-                    st.session_state.website_content = None
                     st.session_state.quiz_text = None
                     st.rerun()
 
         else:
-            # Show subject detection and suggestions first
-            detected_subject = detect_subject_area(st.session_state.website_content)
-            st.info(f"Detected subject area: {detected_subject}")
-            suggestion = suggest_quiz_format(st.session_state.website_content)
-            if suggestion:
-                st.info(suggestion)
+            # Display stored subject detection and suggestions
+            st.info(f"Detected subject area: {st.session_state.detected_subject}")
+            if st.session_state.format_suggestion:
+                st.info(st.session_state.format_suggestion)
 
-            # Quiz configuration
+            # Step 4: Quiz configuration (no loading here)
             st.subheader("Quiz Configuration")
-
-            # Store form inputs in variables (no processing yet)
+            
             col1, col2, col3 = st.columns(3)
             with col1:
-                difficulty = st.selectbox("Difficulty Level:", ["Beginner", "Intermediate", "Advanced"])
+                difficulty = st.selectbox("Difficulty Level:", ["Beginner", "Intermediate", "Advanced"], key='difficulty')
             with col2:
                 question_type = st.selectbox("Question Type:", 
                                            ["Multiple Choice", "Problem Solving", "Essay", "Mixed"],
-                                           help="Mixed will create a balanced combination of different question types")
+                                           help="Mixed will create a balanced combination of different question types",
+                                           key='question_type')
             with col3:
                 num_questions = st.number_input("Number of Questions:", 
                                               min_value=1, 
                                               max_value=100, 
                                               value=5,
-                                              help="Choose between 1-100 questions")
+                                              help="Choose between 1-100 questions",
+                                              key='num_questions')
 
             specific_topics = st.text_area("Quiz Context and Focus Areas:",
                         help="Help us understand your goals! What's the purpose of this quiz? Any specific topics or concepts you want to focus on?",
                         placeholder="Example: 'Preparing for midterm exam, focus on chapters 3-4' or 'Weekly practice quiz for calculus class, emphasize derivatives'",
-                        height=100)
+                        height=100,
+                        key='specific_topics')
 
-            # Only generate quiz when button is clicked
+            # Step 5: Generate quiz only when button is clicked
             if st.button("Generate Quiz"):
                 if not openai.api_key:
                     st.error("Please enter your OpenAI API key first!")
                     st.stop()
 
                 with st.spinner('Generating your quiz...'):
-                    # Generate quiz
                     user_message = f"""Based on the following content: {st.session_state.website_content[:4000]}... (truncated)
-                    Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
+                    Please generate {num_questions} {question_type} questions at {difficulty} level.
                     {"Focus on these topics: " + specific_topics if specific_topics else ""}
                     Calculate and include appropriate time limit based on question types and difficulty.
                     Please format each question with clear A, B, C, D options for multiple choice, or step-by-step solutions for problem solving."""
@@ -738,7 +743,6 @@ elif options == "Quiz Generator":
                     struct.append({"role": "user", "content": user_message})
                     
                     try:
-                        # Generate quiz using OpenAI
                         chat = openai.ChatCompletion.create(
                             model="gpt-4o-mini",
                             messages=struct
@@ -746,6 +750,5 @@ elif options == "Quiz Generator":
                         st.session_state.quiz_text = chat.choices[0].message.content
                         st.session_state.quiz_generated = True
                         st.rerun()
-
                     except Exception as e:
                         st.error(f"An error occurred: {str(e)}")
