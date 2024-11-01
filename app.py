@@ -350,59 +350,65 @@ Content Requirements:
 
 Constraints:
 1. Mathematical Notation Rules:
-   - Always enclose math expressions in LaTeX delimiters: $...$ for inline, $$...$$ for display
-   - Use \\text{} for text within math mode: $v(t) = \\text{velocity at time } t$
-   - Use proper spacing: \\cdot for multiplication, \\, for thin space
-   - Use \\left( and \\right) for dynamic parentheses
-   - Always use proper derivative notation: $\\frac{d}{dx}$ or $\\frac{d}{dt}$
-   - Use proper function notation: $f(x)$, not f(x)
-   - Use proper vector notation: $\\vec{v}$ or $\\mathbf{v}$
+   - ALL mathematical expressions MUST be in LaTeX mode using $ or $$
+   - Basic arithmetic: $2 + 2 = 4$
+   - Multiplication: Use $\cdot$ or $\times$, never use *
+   - Powers/exponents: Use $x^{2}$ or $2^{n}$, never x^2 or 2^n
+   - Variables: Italicized in math mode: $x$, $y$, $n$
+   - Functions: $f(x)$, $g(x)$, never f(x) or g(x)
+   - Derivatives: $f'(x)$ or $\frac{d}{dx}f(x)$
+   - Units: Use \text{} in math mode: $9.8 \text{ m/s}^2$
 
 2. Common Mathematical Expressions:
-   - Fractions: $\\frac{numerator}{denominator}$
-   - Exponents: $x^{power}$
-   - Subscripts: $x_{subscript}$
-   - Roots: $\\sqrt{x}$ or $\\sqrt[n]{x}$
-   - Integrals: $\\int_{a}^{b}$
-   - Summations: $\\sum_{i=1}^{n}$
-   - Matrices: $\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}$
-   - Derivatives: $\\frac{d}{dx}f(x)$ or $f'(x)$
-   - Partial derivatives: $\\frac{\\partial f}{\\partial x}$
-   - Limits: $\\lim_{x \\to a}$
-
-3. Additional Requirements:
-   - Use appropriate citations
-   - Incorporate subject vocabulary with proper notation
-   - Test understanding over recall
-   - Include step-by-step solutions with proper notation
-   - Show all mathematical steps clearly
+   - Fractions: $\frac{a}{b}$
+   - Square roots: $\sqrt{x}$
+   - nth roots: $\sqrt[n]{x}$
+   - Powers: $x^{n}$, $(x+y)^{2}$
+   - Subscripts: $x_{1}$, $a_{n}$
+   - Functions: $f(x)$, $\sin(x)$, $\cos(x)$
+   - Derivatives: $\frac{d}{dx}$, $f'(x)$, $\frac{d^2y}{dx^2}$
+   - Integrals: $\int_{a}^{b} x \, dx$
+   - Limits: $\lim_{x \to a} f(x)$
+   - Summations: $\sum_{i=1}^{n} x_i$
+   - Vectors: $\vec{v}$ or $\mathbf{v}$
 
 Examples:
-1. Mathematics Question:
-   Find the derivative of $f(x) = x^2 + 3x + 1$
+1. Calculus Question:
+   Find $f'(x)$ if $f(x) = x^{2} + 3x + 1$
    
    A) $f'(x) = 2x + 3$
-   B) $f'(x) = x^2 + 3$
+   B) $f'(x) = x^{2} + 3$
    C) $f'(x) = 2x$
    D) $f'(x) = 2$
 
    Solution: 
-   $\\frac{d}{dx}[x^2] = 2x$
-   $\\frac{d}{dx}[3x] = 3$
-   $\\frac{d}{dx}[1] = 0$
+   $\frac{d}{dx}[x^{2}] = 2x$
+   $\frac{d}{dx}[3x] = 3$
+   $\frac{d}{dx}[1] = 0$
    Therefore, $f'(x) = 2x + 3$
 
 2. Physics Question:
-   Calculate the force given mass $m = 2.0 \\text{ kg}$ and acceleration $a = 5.0 \\text{ m/s}^2$:
+   A particle moves according to $s(t) = 3t^{2} - 4t + 2$. Find its velocity at $t = 2$.
    
    Solution:
-   $F = ma = (2.0 \\text{ kg})(5.0 \\text{ m/s}^2) = 10.0 \\text{ N}$
+   $v(t) = \frac{d}{dt}s(t) = 6t - 4$
+   At $t = 2$: $v(2) = 6(2) - 4 = 8$ $\text{m/s}$
 
-3. Calculus Question:
-   Evaluate the integral $\\int_{0}^{1} x^2 \\, dx$
+3. Algebra Question:
+   Simplify $(x^{2} + 2x + 1)(x - 1)$
    
    Solution:
-   $\\int_{0}^{1} x^2 \\, dx = \\left[\\frac{x^3}{3}\\right]_{0}^{1} = \\frac{1}{3} - 0 = \\frac{1}{3}$
+   $= x^{3} + 2x^{2} + x - (x^{2} + 2x + 1)$
+   $= x^{3} + x^{2} - x - 1$
+
+IMPORTANT FORMATTING RULES:
+1. Never use plain text for mathematical expressions
+2. Always wrap math in $ or $$ tags
+3. Always use proper LaTeX notation for exponents: x^{2} not x^2
+4. Always use \cdot or \times for multiplication
+5. Always use \text{} for units in math mode
+6. Always use proper function notation in math mode
+7. Always show step-by-step solutions with proper notation
 """
 
 # Function to format quiz content for PDF using OpenAI API
