@@ -63,7 +63,9 @@ Interdisciplinary Connections:
         # Call OpenAI API
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
-            messages=messages
+            messages=messages,
+            temperature=0.7,
+            max_tokens=500
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -126,7 +128,9 @@ Special Considerations:
         # Call OpenAI API
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
-            messages=messages
+            messages=messages,
+            temperature=0.7,
+            max_tokens=500
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -538,7 +542,12 @@ elif options == "Quiz Generator":
             
             try:
                 # Generate quiz using OpenAI
-                chat = openai.ChatCompletion.create(model="gpt-4o-mini", messages=struct)
+                chat = openai.ChatCompletion.create(
+                    model="gpt-4o-mini",
+                    messages=struct,
+                    temperature=0.7,
+                    max_tokens=2000
+                )
                 response = chat.choices[0].message.content
                 
                 # Split response into questions
