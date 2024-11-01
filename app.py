@@ -311,6 +311,7 @@ Instructions:
 3. Ensure consistent formatting across all question types
 4. Include detailed explanations with proper notation
 5. Maintain notation integrity throughout
+6. Always display time limit at the start of quiz
 
 Context:
 Creating customized quizzes across academic subjects with emphasis on proper notation rendering.
@@ -332,11 +333,32 @@ Content Requirements:
    - Proper subscripts and superscripts using LaTeX notation
 
 3. Time Calculation Guidelines
-   [existing guidelines...]
+   Multiple Choice Questions:
+   - Beginner: 1 minute per question
+   - Intermediate: 1.5 minutes per question
+   - Advanced: 2 minutes per question
+   
+   Problem Solving/Sets:
+   - Beginner: 3 minutes per question
+   - Intermediate: 5 minutes per question
+   - Advanced: 7 minutes per question
+   
+   Essay Questions:
+   - Beginner: 10 minutes per question
+   - Intermediate: 15 minutes per question
+   - Advanced: 20 minutes per question
 
 Constraints:
-1. Always use LaTeX math mode for mathematical expressions ($...$ for inline, $$...$$ for display)
-2. Include proper notation for:
+1. Mathematical Notation Rules:
+   - Always enclose math expressions in LaTeX delimiters: $...$ for inline, $$...$$ for display
+   - Use \\text{} for text within math mode: $v(t) = \\text{velocity at time } t$
+   - Use proper spacing: \\cdot for multiplication, \\, for thin space
+   - Use \\left( and \\right) for dynamic parentheses
+   - Always use proper derivative notation: $\\frac{d}{dx}$ or $\\frac{d}{dt}$
+   - Use proper function notation: $f(x)$, not f(x)
+   - Use proper vector notation: $\\vec{v}$ or $\\mathbf{v}$
+
+2. Common Mathematical Expressions:
    - Fractions: $\\frac{numerator}{denominator}$
    - Exponents: $x^{power}$
    - Subscripts: $x_{subscript}$
@@ -344,28 +366,43 @@ Constraints:
    - Integrals: $\\int_{a}^{b}$
    - Summations: $\\sum_{i=1}^{n}$
    - Matrices: $\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}$
-3. Use appropriate citations
-4. Incorporate subject vocabulary with proper notation
-5. Test understanding over recall
+   - Derivatives: $\\frac{d}{dx}f(x)$ or $f'(x)$
+   - Partial derivatives: $\\frac{\\partial f}{\\partial x}$
+   - Limits: $\\lim_{x \\to a}$
+
+3. Additional Requirements:
+   - Use appropriate citations
+   - Incorporate subject vocabulary with proper notation
+   - Test understanding over recall
+   - Include step-by-step solutions with proper notation
+   - Show all mathematical steps clearly
 
 Examples:
 1. Mathematics Question:
-   What is the derivative of $f(x) = x^2 + 3x + 1$?
+   Find the derivative of $f(x) = x^2 + 3x + 1$
+   
    A) $f'(x) = 2x + 3$
    B) $f'(x) = x^2 + 3$
    C) $f'(x) = 2x$
    D) $f'(x) = 2$
 
-2. Chemistry Question:
-   Balance this equation: Fe + O₂ → Fe₂O₃
-   A) 4Fe + 3O₂ → 2Fe₂O₃
-   B) 2Fe + O₂ → Fe₂O₃
-   C) Fe + O₂ → FeO₃
-   D) 3Fe + O₂ → Fe₃O₂
+   Solution: 
+   $\\frac{d}{dx}[x^2] = 2x$
+   $\\frac{d}{dx}[3x] = 3$
+   $\\frac{d}{dx}[1] = 0$
+   Therefore, $f'(x) = 2x + 3$
 
-3. Physics Question:
-   Calculate the force given mass $m = 2.0$ kg and acceleration $a = 5.0$ m/s²:
+2. Physics Question:
+   Calculate the force given mass $m = 2.0 \\text{ kg}$ and acceleration $a = 5.0 \\text{ m/s}^2$:
+   
+   Solution:
    $F = ma = (2.0 \\text{ kg})(5.0 \\text{ m/s}^2) = 10.0 \\text{ N}$
+
+3. Calculus Question:
+   Evaluate the integral $\\int_{0}^{1} x^2 \\, dx$
+   
+   Solution:
+   $\\int_{0}^{1} x^2 \\, dx = \\left[\\frac{x^3}{3}\\right]_{0}^{1} = \\frac{1}{3} - 0 = \\frac{1}{3}$
 """
 
 # Function to format quiz content for PDF using OpenAI API
