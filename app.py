@@ -690,28 +690,17 @@ elif options == "Quiz Generator":
                     st.rerun()
 
         else:
-            # Show configuration options
-            # Detect subject and suggest format
-            detected_subject = detect_subject_area(st.session_state.website_content)
-            st.info(f"Detected subject area: {detected_subject}")
-            suggestion = suggest_quiz_format(st.session_state.website_content)
-            if suggestion:
-                st.info(suggestion)
-
             # Quiz configuration
             st.subheader("Quiz Configuration")
 
-            # Row 1: Three columns for main settings
+            # Store form inputs in variables (no processing yet)
             col1, col2, col3 = st.columns(3)
-
             with col1:
                 difficulty = st.selectbox("Difficulty Level:", ["Beginner", "Intermediate", "Advanced"])
-
             with col2:
                 question_type = st.selectbox("Question Type:", 
                                            ["Multiple Choice", "Problem Solving", "Essay", "Mixed"],
                                            help="Mixed will create a balanced combination of different question types")
-
             with col3:
                 num_questions = st.number_input("Number of Questions:", 
                                               min_value=1, 
@@ -719,19 +708,25 @@ elif options == "Quiz Generator":
                                               value=5,
                                               help="Choose between 1-100 questions")
 
-            # Row 2: Full-width text area
-            st.text_area("Quiz Context and Focus Areas:",
+            specific_topics = st.text_area("Quiz Context and Focus Areas:",
                         help="Help us understand your goals! What's the purpose of this quiz? Any specific topics or concepts you want to focus on?",
                         placeholder="Example: 'Preparing for midterm exam, focus on chapters 3-4' or 'Weekly practice quiz for calculus class, emphasize derivatives'",
                         height=100)
 
-            # Generate Quiz button
+            # Only process and generate quiz when button is clicked
             if st.button("Generate Quiz"):
                 if not openai.api_key:
                     st.error("Please enter your OpenAI API key first!")
                     st.stop()
 
                 with st.spinner('Generating your quiz...'):
+                    # Now detect subject and suggest format
+                    detected_subject = detect_subject_area(st.session_state.website_content)
+                    st.info(f"Detected subject area: {detected_subject}")
+                    suggestion = suggest_quiz_format(st.session_state.website_content)
+                    if suggestion:
+                        st.info(suggestion)
+
                     # Generate quiz
                     user_message = f"""Based on the following content: {st.session_state.website_content[:4000]}... (truncated)
                     Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
@@ -750,24 +745,6 @@ elif options == "Quiz Generator":
                         )
                         st.session_state.quiz_text = chat.choices[0].message.content
                         st.session_state.quiz_generated = True
-                        
-                        # Create PDF file for quiz with math support
-                        pdf = FPDF()
-                        pdf.add_page()
-                        pdf.set_font("Arial", size=12)
-                        pdf.cell(200, 10, txt="Practice Quiz", ln=1, align='C')
-                        
-                        # Split quiz text into lines and add to PDF
-                        lines = st.session_state.quiz_text.split('\n')
-                        for line in lines:
-                            # Process mathematical notation
-                            line = line.replace('^', '**')  # Convert ^ to ** for exponents
-                            pdf.multi_cell(0, 10, txt=line)
-                        
-                        # Store PDF data in session state
-                        st.session_state.pdf_data = pdf.output(dest='S').encode('latin-1')
-                        
-                        # Rerun to show the quiz and download button
                         st.rerun()
 
                     except Exception as e:
