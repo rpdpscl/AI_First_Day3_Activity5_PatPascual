@@ -8,11 +8,6 @@ import PyPDF2
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
-from moviepy.editor import VideoFileClip
-import speech_recognition as sr
-import tempfile
-import yt_dlp
-import whisper
 import io
 from fpdf import FPDF
 import docx
@@ -36,7 +31,7 @@ st.warning("""
    
 2. File Upload Guidelines:
    - Maximum file size: 10MB per file
-   - Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG, MP4, AVI, MOV
+   - Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG
    - Do not upload sensitive or confidential materials
    - Ensure you have rights to use uploaded content
    
@@ -51,62 +46,6 @@ st.warning("""
    - Not recommended for official testing/assessment
    - Keep API keys secure and do not share them
 """)
-
-# Cache Whisper model loading for improved performance
-@st.cache_resource
-def load_whisper_model():
-    """Load and cache the Whisper model to avoid reloading"""
-    return whisper.load_model("base")
-
-# Helper function for processing video content
-def extract_audio_from_video(video_source, is_url=True, timeout=300):
-    """
-    Extract audio from video file or URL and convert to text
-    Args:
-        video_source: Path or URL to video
-        is_url: Boolean indicating if source is URL
-        timeout: Maximum processing time in seconds
-    Returns:
-        Extracted text from audio
-    """
-    try:
-        if is_url:
-            # Configure yt-dlp options for URL downloads
-            ydl_opts = {
-                'format': 'best',
-                'extract_audio': True,
-                'quiet': True,
-                'no_warnings': True,
-                'outtmpl': 'temp_video',
-                'socket_timeout': timeout
-            }
-            
-            # Download video from URL
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(video_source, download=True)
-                video_path = ydl.prepare_filename(info)
-        else:
-            # Use provided path for uploaded files
-            video_path = video_source
-
-        # Extract audio and convert to text using Whisper
-        video = VideoFileClip(video_path)
-        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio:
-            video.audio.write_audiofile(temp_audio.name, verbose=False, logger=None)
-        
-        model = load_whisper_model()
-        result = model.transcribe(temp_audio.name)
-        text = result["text"]
-        
-        # Clean up temporary files
-        if is_url:
-            os.remove(video_path)
-        os.remove(temp_audio.name)
-        video.close()
-        
-        return text
-    except Exception as e:
-        return f"Error processing video: {str(e)}"
 
 # Helper function for extracting text from various file formats
 def extract_text_from_file(uploaded_file):
@@ -291,13 +230,22 @@ def get_essay_rubric():
 # Set up sidebar with API key input and navigation
 with st.sidebar:
     st.image('images/White_AI Republic.png')
-    openai.api_key = st.text_input('Enter OpenAI API token:', type='password')
-    if not openai.api_key:
-        st.warning('Please enter your OpenAI API token!', icon='⚠️')
-    elif not (openai.api_key.startswith('sk-') and len(openai.api_key)==51):
-        st.warning('Please enter a valid OpenAI API token!', icon='⚠️')
-    else:
-        st.success('Proceed to generating your quiz!', icon='👉')
+    
+    # API key input with Enter button
+    col1, col2 = st.columns([3,1])
+    with col1:
+        openai.api_key = st.text_input('Enter OpenAI API token:', type='password')
+    with col2:
+        check_api = st.button('Enter')
+    
+    if check_api:
+        if not openai.api_key:
+            st.warning('Please enter your OpenAI API token!', icon='⚠️')
+        elif not (openai.api_key.startswith('sk-') and len(openai.api_key)==51):
+            st.warning('Please enter a valid OpenAI API token!', icon='⚠️')
+        else:
+            st.success('Proceed to generating your quiz!', icon='👉')
+            
     with st.container():
         l, m, r = st.columns((1, 3, 1))
         with l: st.empty()
@@ -430,7 +378,7 @@ elif options == "Quiz Generator":
     st.title("Quiz Generator")
     
     # Create tabs for different input methods
-    input_method = st.tabs(["Manual Input", "File Upload", "Video URL", "Website URL"])
+    input_method = st.tabs(["Manual Input", "File Upload", "Website URL"])
     
     with input_method[0]:
         # Manual input interface
@@ -453,42 +401,6 @@ elif options == "Quiz Generator":
                     st.info(f"Detected subject area: {detected_subject}")
     
     with input_method[2]:
-        # Video input interface
-        st.write("Choose video source:")
-        video_source = st.radio("", ["URL", "Upload File"], horizontal=True)
-        
-        if video_source == "URL":
-            video_url = st.text_input("Enter video URL:")
-            if video_url:
-                with st.spinner("Processing video..."):
-                    text = extract_audio_from_video(video_url, is_url=True)
-                    if text.startswith("Error"):
-                        st.error(text)
-                    else:
-                        st.success("Video processed successfully!")
-                        detected_subject = detect_subject_area(text)
-                        st.info(f"Detected subject area: {detected_subject}")
-        else:
-            uploaded_video = st.file_uploader("Upload video file", type=['mp4', 'avi', 'mov', 'mkv'])
-            if uploaded_video:
-                # Save uploaded file to temporary location
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_file:
-                    tmp_file.write(uploaded_video.read())
-                    video_path = tmp_file.name
-                
-                with st.spinner("Processing video..."):
-                    text = extract_audio_from_video(video_path, is_url=False)
-                    # Clean up the temporary file
-                    os.remove(video_path)
-                    
-                    if text.startswith("Error"):
-                        st.error(text)
-                    else:
-                        st.success("Video processed successfully!")
-                        detected_subject = detect_subject_area(text)
-                        st.info(f"Detected subject area: {detected_subject}")
-    
-    with input_method[3]:
         # Website URL interface
         website_url = st.text_input("Enter website URL:")
         if website_url:
@@ -515,14 +427,6 @@ elif options == "Quiz Generator":
         question_type = st.multiselect("Select question types:", 
                                      ["Multiple Choice", "Essay", "Problem Sets", "Problem Solving", "Mixed"],
                                      default=["Multiple Choice"])
-        
-        # Show format suggestions if text is available
-        if 'text' in locals() and text and question_type:
-            suggestions, detected_subject = suggest_quiz_format(text, question_type)
-            if suggestions:
-                st.info("Format Suggestions:")
-                for suggestion in suggestions:
-                    st.write(suggestion)
     
     # Advanced options
     with st.expander("Advanced Options"):
@@ -531,9 +435,22 @@ elif options == "Quiz Generator":
         include_explanations = st.checkbox("Include detailed explanations", value=True)
         math_mode = st.checkbox("Enable math mode (LaTeX support)", value=True)
     
+    # Generate Quiz button
     if st.button("Generate Quiz"):
+        if not openai.api_key:
+            st.error("Please enter your OpenAI API key first!")
+            st.stop()
+            
+        # Show format suggestions if text is available
+        if 'text' in locals() and text and question_type:
+            suggestions, detected_subject = suggest_quiz_format(text, question_type)
+            if suggestions:
+                st.info("Format Suggestions:")
+                for suggestion in suggestions:
+                    st.write(suggestion)
+                    
         # Determine which input method was used and create appropriate user message
-        if 'text' in locals():  # For PDF, Video, or Website content
+        if 'text' in locals():  # For PDF or Website content
             user_message = f"""Based on the following content: {text[:4000]}... (truncated)
             Please generate {num_questions} {', '.join(question_type)} questions at {difficulty} level.
             {"Focus on these topics: " + specific_topics if specific_topics else ""}
