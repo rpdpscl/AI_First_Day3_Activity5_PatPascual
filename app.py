@@ -367,6 +367,11 @@ elif options == "Quiz Generator":
         if subject_text:
             detected_subject = detect_subject_area(subject_text)
             st.info(f"Detected subject area: {detected_subject}")
+            suggestions, _ = suggest_quiz_format(subject_text, ["Multiple Choice", "Problem Solving", "Essay"])
+            if suggestions:
+                st.info("Suggested Question Types:")
+                for suggestion in suggestions:
+                    st.write(suggestion)
     
     with input_method[1]:
         # File upload interface
@@ -380,6 +385,11 @@ elif options == "Quiz Generator":
                     st.success("File processed successfully!")
                     detected_subject = detect_subject_area(text)
                     st.info(f"Detected subject area: {detected_subject}")
+                    suggestions, _ = suggest_quiz_format(text, ["Multiple Choice", "Problem Solving", "Essay"])
+                    if suggestions:
+                        st.info("Suggested Question Types:")
+                        for suggestion in suggestions:
+                            st.write(suggestion)
     
     with input_method[2]:
         # Website URL interface
@@ -393,6 +403,11 @@ elif options == "Quiz Generator":
                 st.success("Website content extracted successfully!")
                 detected_subject = detect_subject_area(text)
                 st.info(f"Detected subject area: {detected_subject}")
+                suggestions, _ = suggest_quiz_format(text, ["Multiple Choice", "Problem Solving", "Essay"])
+                if suggestions:
+                    st.info("Suggested Question Types:")
+                    for suggestion in suggestions:
+                        st.write(suggestion)
             except Exception as e:
                 st.error(f"Error extracting website content: {str(e)}")
 
@@ -422,26 +437,6 @@ elif options == "Quiz Generator":
             st.error("Please enter your OpenAI API key first!")
             st.stop()
             
-        # Show format suggestions if text is available
-        if 'text' in locals() and text:
-            suggestions = []
-            detected_subject = detect_subject_area(text)
-            
-            # Add format suggestions based on subject and question types
-            if "Multiple Choice" in question_type:
-                suggestions.append("- Multiple choice questions are recommended for testing factual knowledge")
-            
-            if "Problem Solving" in question_type:
-                suggestions.append("- Problem solving questions work well for mathematical or analytical content")
-                
-            if "Essay" in question_type:
-                suggestions.append("- Essay questions are ideal for testing deeper understanding and analysis")
-                
-            if suggestions:
-                st.info("Format Suggestions:")
-                for suggestion in suggestions:
-                    st.write(suggestion)
-                    
         # Determine which input method was used and create appropriate user message
         if 'text' in locals():  # For PDF or Website content
             user_message = f"""Based on the following content: {text[:4000]}... (truncated)
@@ -472,22 +467,13 @@ elif options == "Quiz Generator":
                 chat = openai.ChatCompletion.create(model="gpt-4o-mini", messages=struct)
                 response = chat.choices[0].message.content
                 
-                # Split response into questions and answers
+                # Split response into questions
                 quiz_parts = response.split("\n\n")
                 questions = []
-                hints = []
-                answer_key = []
-                explanations = []
                 
                 for part in quiz_parts:
                     if part.startswith("Question"):
                         questions.append(part)
-                    elif part.startswith("Hint:"):
-                        hints.append(part)
-                    elif any(x in part for x in ["Correct Answer:", "Grading Rubric:", "Solution Approach:", "Acceptable Answers:"]):
-                        answer_key.append(part)
-                    elif part.startswith("Explanation:"):
-                        explanations.append(part)
                 
                 quiz_text = "\n\n".join(questions)
                 
@@ -497,7 +483,7 @@ elif options == "Quiz Generator":
                 else:
                     st.write(quiz_text)
                 
-                # Create PDF files
+                # Create PDF file for quiz
                 def create_pdf(content, title):
                     """Generate PDF with quiz content"""
                     pdf = FPDF()
@@ -509,103 +495,13 @@ elif options == "Quiz Generator":
                     pdf.multi_cell(0, 10, txt=content_ascii)
                     return pdf.output(dest='S').encode('latin-1')
                 
-                # Download buttons for quiz and answer key
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.download_button(
-                        label="Download Quiz (PDF)",
-                        data=create_pdf(quiz_text, "Practice Quiz"),
-                        file_name="quiz.pdf",
-                        mime="application/pdf"
-                    )
-                with col2:
-                    answer_key_text = "\n\n".join(answer_key)
-                    st.download_button(
-                        label="Download Answer Key (PDF)",
-                        data=create_pdf(answer_key_text, "Answer Key"),
-                        file_name="answer_key.pdf",
-                        mime="application/pdf"
-                    )
-                
-                # Quiz taking interface
-                st.subheader("Take the Quiz")
-                if st.button("Start Quiz"):
-                    student_answers = {}
-                    correct_answers = {}
-                    
-                    # Extract correct answers from answer key
-                    for i, (question, hint) in enumerate(zip(questions, hints), 1):
-                        st.write(f"\n{question}")
-                        
-                        # Add hint button for each question
-                        if st.button(f"Show Hint for Question {i}", key=f"hint_{i}"):
-                            st.info(hint)
-                            
-                        if "Multiple Choice" in question_type:
-                            student_answers[i] = st.radio(
-                                f"Your answer for Question {i}:",
-                                ["A", "B", "C", "D"],
-                                key=f"q_{i}"
-                            )
-                            
-                            # Add show answer button for each question
-                            if st.button(f"Show Answer for Question {i}", key=f"answer_{i}"):
-                                st.success(f"Correct Answer: {answer_key[i-1]}")
-                                st.write(f"Explanation: {explanations[i-1]}")
-                                
-                        elif "Problem Solving" in question_type:
-                            student_answer = st.text_input(f"Your answer for Problem {i}")
-                            if student_answer:
-                                acceptable_answers = answer_key[i-1].split("Acceptable Answers:")[1].strip().split(",")
-                                is_correct = any(check_math_equivalence(student_answer, ans.strip()) for ans in acceptable_answers)
-                                if is_correct:
-                                    st.success("Correct!")
-                                else:
-                                    st.error("Incorrect. Try again.")
-                                    
-                                # Add show answer button
-                                if st.button(f"Show Solution for Problem {i}", key=f"solution_{i}"):
-                                    st.write(answer_key[i-1])
-                                    st.write(explanations[i-1])
-                                    
-                        elif "Essay" in question_type:
-                            st.text_area(f"Essay Response for Question {i}:", key=f"essay_{i}")
-                            st.write("Grading Rubric:")
-                            st.write(get_essay_rubric())
-                            
-                            # Add essay guidance button
-                            if st.button(f"Show Writing Guidelines for Essay {i}", key=f"guide_{i}"):
-                                st.write(answer_key[i-1])
-                    
-                    if st.button("Submit Quiz"):
-                        score = 0
-                        incorrect_questions = []
-                        
-                        # Calculate score for multiple choice questions
-                        for q_num in student_answers:
-                            if student_answers[q_num] == correct_answers.get(q_num):
-                                score += 1
-                            else:
-                                incorrect_questions.append(q_num)
-                        
-                        # Display results and feedback
-                        st.subheader("Quiz Results")
-                        if len(correct_answers) > 0:
-                            percentage = (score / len(correct_answers)) * 100
-                            st.write(f"Score: {score}/{len(correct_answers)} ({percentage:.1f}%)")
-                            
-                            # Show detailed feedback
-                            st.write("\nDetailed Feedback:")
-                            for q_num in student_answers:
-                                st.write(f"\nQuestion {q_num}:")
-                                if q_num in incorrect_questions:
-                                    st.error("Incorrect")
-                                    st.write(f"Your answer: {student_answers[q_num]}")
-                                    st.write(f"Correct answer: {correct_answers[q_num]}")
-                                    st.write(explanations[q_num-1])
-                                else:
-                                    st.success("Correct!")
-                                    st.write(explanations[q_num-1])
+                # Download button for quiz
+                st.download_button(
+                    label="Download Quiz (PDF)",
+                    data=create_pdf(quiz_text, "Practice Quiz"),
+                    file_name="quiz.pdf",
+                    mime="application/pdf"
+                )
 
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
