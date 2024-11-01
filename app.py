@@ -231,51 +231,28 @@ def get_essay_rubric():
 with st.sidebar:
     st.image('images/White_AI Republic.png')
     
-    # Create a container for API input and button
-    with st.container():
-        # API key input with Enter button - Fixed column layout
-        api_col1, api_col2 = st.columns([5,1], gap="small")  # Reduced gap between columns
-        with api_col1:
-            openai.api_key = st.text_input('Enter OpenAI API token:', type='password', label_visibility="visible")
-        with api_col2:
-            check_api = st.button('▶', use_container_width=True, key='api_button')
-            
-            # Add custom CSS to style the button and fix alignment
-            st.markdown("""
-                <style>
-                /* Adjust column spacing and alignment */
-                [data-testid="column"] {
-                    padding: 0 !important;
-                }
-                
-                div[data-testid="stHorizontalBlock"] {
-                    gap: 0.5rem !important;
-                }
-                
-                /* Style the button */
-                [data-testid="stButton"][aria-label="api_button"] {
-                    font-size: 12px !important;
-                    padding: 0px !important;
-                    height: 38px !important;
-                    margin: 0 !important;
-                    background-color: transparent !important;
-                    border: 1px solid rgba(250, 250, 250, 0.2) !important;
-                    border-radius: 4px !important;
-                    color: rgb(255, 75, 75) !important;
-                    width: 38px !important;
-                    min-width: 38px !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    transform: translateY(25px) !important;  /* Align with input field */
-                }
-                
-                [data-testid="stButton"][aria-label="api_button"]:hover {
-                    border-color: rgb(255, 75, 75) !important;
-                    color: rgb(255, 75, 75) !important;
-                }
-                </style>
-                """, unsafe_allow_html=True)
+    # Row 1: Label
+    st.write('Enter OpenAI API token:')
+    
+    # Row 2: Input box and button in columns
+    col1, col2 = st.columns([5,1], gap="small")
+    with col1:
+        openai.api_key = st.text_input('', type='password', label_visibility="collapsed")
+    with col2:
+        check_api = st.button('▶', key='api_button')
+        
+        # Minimal CSS for button styling
+        st.markdown("""
+            <style>
+            [data-testid="stButton"][aria-label="api_button"] {
+                font-size: 12px;
+                background-color: transparent;
+                border: 1px solid rgba(250, 250, 250, 0.2);
+                border-radius: 4px;
+                color: rgb(255, 75, 75);
+            }
+            </style>
+            """, unsafe_allow_html=True)
     
     if check_api:
         if not openai.api_key:
@@ -285,13 +262,6 @@ with st.sidebar:
         else:
             st.success('Proceed to generating your quiz!', icon='👉')
     
-    # Remove unnecessary empty container
-    # with st.container():
-    #     l, m, r = st.columns((1, 3, 1))
-    #     with l: st.empty()
-    #     with m: st.empty()
-    #     with r: st.empty()
-
     # Navigation menu
     options = option_menu(
         "Dashboard", 
