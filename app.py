@@ -35,22 +35,23 @@ def detect_subject_area(text):
     except Exception as e:
         return f"Error detecting subject: {str(e)}"
 
-# Function to suggest quiz format based on content and question types
-def suggest_quiz_format(text, question_types):
-    suggestions = []
-    detected_subject = detect_subject_area(text)
+# Function to suggest quiz format based on content
+def suggest_quiz_format(text):
+    # Create message structure for OpenAI API
+    messages = [
+        {"role": "system", "content": "You are an educational expert. Given some text content and its subject area, suggest the most appropriate quiz format."},
+        {"role": "user", "content": f"Based on this text content, suggest the most appropriate quiz format. Return the response in this exact format only: 'Since the subject matter is [subject], it is recommended to generate [quiz type] type of quiz'. Text: {text[:1000]}... (truncated)"}
+    ]
     
-    # Add format suggestions based on detected subject
-    if "mathematics" in detected_subject.lower() or "physics" in detected_subject.lower():
-        suggestions.append("- Problem solving questions are recommended for mathematical calculations and proofs")
-    elif "history" in detected_subject.lower() or "literature" in detected_subject.lower():
-        suggestions.append("- Essay questions are ideal for analyzing historical events or literary works")
-    elif "biology" in detected_subject.lower() or "chemistry" in detected_subject.lower():
-        suggestions.append("- Multiple choice questions work well for testing scientific concepts and terminology")
-    else:
-        suggestions.append("- Multiple choice questions are recommended as a general assessment format")
-        
-    return suggestions, detected_subject
+    try:
+        # Call OpenAI API
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=messages
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error suggesting quiz format: {str(e)}"
 
 # Add session state initialization
 if 'accepted_terms' not in st.session_state:
@@ -367,11 +368,9 @@ elif options == "Quiz Generator":
         if subject_text:
             detected_subject = detect_subject_area(subject_text)
             st.info(f"Detected subject area: {detected_subject}")
-            suggestions, _ = suggest_quiz_format(subject_text, ["Multiple Choice", "Problem Solving", "Essay"])
-            if suggestions:
-                st.info("Suggested Question Types:")
-                for suggestion in suggestions:
-                    st.write(suggestion)
+            suggestion = suggest_quiz_format(subject_text)
+            if suggestion:
+                st.info(suggestion)
     
     with input_method[1]:
         # File upload interface
@@ -385,11 +384,9 @@ elif options == "Quiz Generator":
                     st.success("File processed successfully!")
                     detected_subject = detect_subject_area(text)
                     st.info(f"Detected subject area: {detected_subject}")
-                    suggestions, _ = suggest_quiz_format(text, ["Multiple Choice", "Problem Solving", "Essay"])
-                    if suggestions:
-                        st.info("Suggested Question Types:")
-                        for suggestion in suggestions:
-                            st.write(suggestion)
+                    suggestion = suggest_quiz_format(text)
+                    if suggestion:
+                        st.info(suggestion)
     
     with input_method[2]:
         # Website URL interface
@@ -403,11 +400,9 @@ elif options == "Quiz Generator":
                 st.success("Website content extracted successfully!")
                 detected_subject = detect_subject_area(text)
                 st.info(f"Detected subject area: {detected_subject}")
-                suggestions, _ = suggest_quiz_format(text, ["Multiple Choice", "Problem Solving", "Essay"])
-                if suggestions:
-                    st.info("Suggested Question Types:")
-                    for suggestion in suggestions:
-                        st.write(suggestion)
+                suggestion = suggest_quiz_format(text)
+                if suggestion:
+                    st.info(suggestion)
             except Exception as e:
                 st.error(f"Error extracting website content: {str(e)}")
 
