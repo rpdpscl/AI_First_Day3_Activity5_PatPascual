@@ -231,12 +231,12 @@ def get_essay_rubric():
 with st.sidebar:
     st.image('images/White_AI Republic.png')
     
-    # API key input with Enter button
-    col1, col2 = st.columns([3,1])
-    with col1:
-        openai.api_key = st.text_input('Enter OpenAI API token:', type='password')
-    with col2:
-        check_api = st.button('Enter')
+    # API key input with Enter button - Fixed column layout
+    api_col1, api_col2 = st.columns([4,1])  # Adjusted ratio for better alignment
+    with api_col1:
+        openai.api_key = st.text_input('Enter OpenAI API token:', type='password', label_visibility="visible")
+    with api_col2:
+        check_api = st.button('Enter', use_container_width=True)  # Added container width
     
     if check_api:
         if not openai.api_key:
@@ -245,12 +245,13 @@ with st.sidebar:
             st.warning('Please enter a valid OpenAI API token!', icon='⚠️')
         else:
             st.success('Proceed to generating your quiz!', icon='👉')
-            
-    with st.container():
-        l, m, r = st.columns((1, 3, 1))
-        with l: st.empty()
-        with m: st.empty()
-        with r: st.empty()
+    
+    # Remove unnecessary empty container
+    # with st.container():
+    #     l, m, r = st.columns((1, 3, 1))
+    #     with l: st.empty()
+    #     with m: st.empty()
+    #     with r: st.empty()
 
     # Navigation menu
     options = option_menu(
