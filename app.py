@@ -713,7 +713,9 @@ elif options == "Quiz Generator":
                 
                 pdf = PDF()
                 pdf.add_page()
-                pdf.set_font("Arial", size=12)
+                # Use Unicode font
+                pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
+                pdf.set_font('DejaVu', size=12)
                 pdf.set_auto_page_break(auto=True, margin=15)
                 
                 # Convert all mathematical notation to Unicode before processing
@@ -723,30 +725,28 @@ elif options == "Quiz Generator":
                 lines = unicode_text.split('\n')
                 for line in lines:
                     try:
-                        # Clean the line of problematic characters
-                        cleaned_line = ''.join(char for char in line if ord(char) < 256)
-                        
                         # Format the line based on content type
                         if line.startswith('Question'):
-                            pdf.set_font('Arial', 'B', 12)
-                            pdf.multi_cell(0, 10, cleaned_line)
-                            pdf.set_font('Arial', '', 12)
+                            pdf.set_font('DejaVu', size=12, style='B')
+                            pdf.multi_cell(0, 10, line)
+                            pdf.set_font('DejaVu', size=12)
                         elif line.startswith(('A)', 'B)', 'C)', 'D)')):
                             pdf.cell(10)  # Add indent
-                            pdf.multi_cell(0, 10, cleaned_line)
+                            pdf.multi_cell(0, 10, line)
                         else:
-                            pdf.multi_cell(0, 10, cleaned_line)
+                            pdf.multi_cell(0, 10, line)
                         
                         # Add spacing between questions
                         if not line.strip():
                             pdf.ln(5)
                     except Exception as e:
+                        print(f"Error processing line: {e}")
                         continue  # Skip problematic lines
                 
                 try:
                     return pdf.output(dest='S').encode('latin-1')
                 except Exception as e:
-                    # Fallback to basic ASCII if encoding fails
+                    # If Unicode encoding fails, create a basic ASCII version
                     pdf = PDF()
                     pdf.add_page()
                     pdf.set_font("Arial", size=12)
