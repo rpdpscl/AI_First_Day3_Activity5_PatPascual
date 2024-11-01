@@ -713,9 +713,8 @@ elif options == "Quiz Generator":
                 
                 pdf = PDF()
                 pdf.add_page()
-                # Use Unicode font
-                pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
-                pdf.set_font('DejaVu', size=12)
+                # Use Arial font instead of DejaVu
+                pdf.set_font('Arial', size=12)
                 pdf.set_auto_page_break(auto=True, margin=15)
                 
                 # Convert all mathematical notation to Unicode before processing
@@ -727,9 +726,9 @@ elif options == "Quiz Generator":
                     try:
                         # Format the line based on content type
                         if line.startswith('Question'):
-                            pdf.set_font('DejaVu', size=12, style='B')
+                            pdf.set_font('Arial', 'B', 12)  # Bold for questions
                             pdf.multi_cell(0, 10, line)
-                            pdf.set_font('DejaVu', size=12)
+                            pdf.set_font('Arial', '', 12)  # Regular for other text
                         elif line.startswith(('A)', 'B)', 'C)', 'D)')):
                             pdf.cell(10)  # Add indent
                             pdf.multi_cell(0, 10, line)
