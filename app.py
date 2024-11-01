@@ -654,6 +654,7 @@ elif options == "Quiz Generator":
             
             st.markdown("---")
             
+            # Create two columns for the buttons
             left_col, right_col = st.columns(2)
             
             with left_col:
@@ -671,7 +672,7 @@ elif options == "Quiz Generator":
                     st.session_state.url_processed = False
                     st.session_state.quiz_generated = False
                     st.session_state.quiz_text = None
-                    st.session_state.pdf_data = None  # Also clear PDF data
+                    st.session_state.pdf_data = None
                     st.rerun()
 
         else:
