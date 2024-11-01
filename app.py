@@ -290,7 +290,7 @@ if options == "Home":
         <li style='margin-bottom: 8px;'>• Multiple question formats and difficulty levels</li>
         <li style='margin-bottom: 8px;'>• Comprehensive answer explanations</li>
         <li style='margin-bottom: 8px;'>• Math-friendly with LaTeX support</li>
-        <li style='margin-bottom: 8px;'>• Multi-format file upload capability</li>
+        <li style='margin-bottom: 8px;'>• Head to Quiz Generator to start creating your quiz!</li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -300,7 +300,7 @@ if options == "Home":
         st.markdown("""
         <div style='background-color: #f8f9fa; padding: 15px; border-radius: 10px; font-size: 16px; color: #1f1f1f; min-height: 200px;'>
         <ul style='list-style-type: none; padding-left: 0; margin: 0;'>
-        <li style='margin-bottom: 8px;'>• 15% average score improvement</li>
+        <li style='margin-bottom: 8px;'>• Streamlined quiz creation for educators</li>
         <li style='margin-bottom: 8px;'>• Personalized learning experience</li>
         <li style='margin-bottom: 8px;'>• Instant feedback and explanations</li>
         <li style='margin-bottom: 8px;'>• Time-efficient exam preparation</li>
