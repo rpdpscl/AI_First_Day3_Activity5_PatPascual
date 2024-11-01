@@ -229,7 +229,7 @@ def get_essay_rubric():
 
 # Set up sidebar with API key input and navigation
 with st.sidebar:
-    st.image('images/QuizGenius.jpg')
+    st.image('images/QuizGenius.png')
     
     # Row 1: Label
     st.write('Enter OpenAI API token:')
