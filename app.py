@@ -17,80 +17,86 @@ from PIL import Image
 import sympy
 from sympy import simplify, latex
 
+# Add session state initialization
+if 'accepted_terms' not in st.session_state:
+    st.session_state.accepted_terms = False
+
 # Configure Streamlit page settings
 st.set_page_config(page_title="QuizGenius", page_icon="🧠", layout="wide")
+
+# Warning page
+if not st.session_state.accepted_terms:
+    st.markdown("""
+        <style>
+        .warning-header {
+            color: #ff4b4b;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .warning-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff4b4b;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<h1 class='warning-header'>⚠️ Important Warnings and Guidelines</h1>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
+    st.markdown("### 1. Quiz Generation Disclaimer")
+    st.markdown("""
+    - Always review generated quiz content before use
+    - AI may occasionally produce inaccurate or hallucinated content
+    - Verify questions and answers against trusted sources
+    - Generated content should be used for practice purposes only
+    - Not recommended for official testing/assessment
+    """)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
+    st.markdown("### 2. File Upload Guidelines")
+    st.markdown("""
+    - Maximum file size: 10MB per file
+    - Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG
+    - Do not upload sensitive or confidential materials
+    - Ensure you have rights to use uploaded content
+    """)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
+    st.markdown("### 3. Security Warnings")
+    st.markdown("""
+    - Do not upload materials containing personal/sensitive information
+    - Avoid uploading proprietary or classified documents
+    - Be cautious with academic materials to prevent data leakage
+    - Website URLs should be from trusted sources only
+    """)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.markdown("<div class='warning-section'>", unsafe_allow_html=True)
+    st.markdown("### 4. Usage Guidelines")
+    st.markdown("""
+    - Keep API keys secure and do not share them
+    - Use the tool responsibly and ethically
+    - Respect intellectual property rights
+    - Report any issues or concerns to support
+    """)
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    agree = st.checkbox("I have read and agree to the above warnings and guidelines")
+    if st.button("Continue to QuizGenius", disabled=not agree):
+        st.session_state.accepted_terms = True
+        st.experimental_rerun()
+    
+    st.stop()
 
 # Set up sidebar with API key input and navigation
 with st.sidebar:
     st.image('images/QuizGenius.png')
-    
-    # Add warning button below logo
-    st.markdown("""
-    <style>
-    @keyframes flash {
-        0% { background-color: #ff4b4b; }
-        50% { background-color: #ff7b7b; }
-        100% { background-color: #ff4b4b; }
-    }
-
-    .flash-button {
-        padding: 10px 20px;
-        background-color: #ff4b4b;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        animation: flash 2s infinite;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-
-    .warning-content {
-        display: none;
-        position: fixed;
-        top: 70px;
-        right: 20px;
-        width: 400px;
-        padding: 20px;
-        background-color: white;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-    }
-    </style>
-
-    <button class="flash-button" onclick="document.getElementById('warning-content').style.display = document.getElementById('warning-content').style.display === 'none' ? 'block' : 'none'">⚠️ Important Warnings</button>
-    <div id="warning-content" class="warning-content">
-        <h3>⚠️ IMPORTANT - PLEASE READ</h3>
-        <h4>1. Quiz Generation Disclaimer:</h4>
-        <ul>
-            <li>Always review generated quiz content before use</li>
-            <li>AI may occasionally produce inaccurate or hallucinated content</li>
-            <li>Verify questions and answers against trusted sources</li>
-        </ul>
-        <h4>2. File Upload Guidelines:</h4>
-        <ul>
-            <li>Maximum file size: 10MB per file</li>
-            <li>Supported formats: PDF, DOCX, XLSX, CSV, PNG, JPG, JPEG</li>
-            <li>Do not upload sensitive or confidential materials</li>
-            <li>Ensure you have rights to use uploaded content</li>
-        </ul>
-        <h4>3. Security Warnings:</h4>
-        <ul>
-            <li>Do not upload materials containing personal/sensitive information</li>
-            <li>Avoid uploading proprietary or classified documents</li>
-            <li>Be cautious with academic materials to prevent data leakage</li>
-            <li>Website URLs should be from trusted sources only</li>
-        </ul>
-        <h4>4. Usage Guidelines:</h4>
-        <ul>
-            <li>Generated content is for practice purposes only</li>
-            <li>Not recommended for official testing/assessment</li>
-            <li>Keep API keys secure and do not share them</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
     
     # Row 1: Label
     st.write('Enter OpenAI API token:')
